@@ -3,215 +3,390 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="One Page Card turns an agent's concise notes into printable A4 principle cards and project status cards, with a mobile-friendly view.">
-<title>一页卡</title>
+<meta name="description" content="One Page Card turns an agent's concise notes into printable one-page cards: principles, projects, decisions, reviews, SOPs, knowledge, system maps, habits, weekly plans, checklists and people. A4, A5, phone wallpaper and widget sizes.">
+<title>一页卡 · One Page Card</title>
+<style id="pagesize">@page{size:A4;margin:0}</style>
 <style>
 :root{
-  --ink:#161616; --body:#333333; --muted:#555555; --line:#161616;
-  --paper:#ffffff; --bg:#ECEAE6;
-  --accent:#B4410F; --accent-project:#2F6B3A;
-  --serif:'Noto Serif SC','Songti SC','STSong',serif;
-  --sans:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  --ink:#161616; --body:#333333; --muted:#595959; --line:#161616; --hair:#BDBDBD;
+  --paper:#ffffff; --bg:#ECEAE6; --warn:#B3261E;
+  --serif:"Songti SC","STSong","Noto Serif CJK SC","Source Han Serif SC","Noto Serif SC",serif;
+  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC","Noto Sans SC",sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}
-.bar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:12px;
-  padding:10px 16px;background:var(--ink);color:#fff;font-size:14px}
-.bar button{font:inherit;font-weight:700;background:#fff;color:var(--ink);border:0;padding:10px 16px;min-height:44px;cursor:pointer}
-.bar .hint{color:#D9D9D9;font-size:12px}
-.stack{display:flex;flex-direction:column;align-items:center;gap:24px;padding:24px 16px 48px}
+button,select,textarea{font:inherit}
 
-/* 卡片：屏幕上是流式，打印时固定 A4 */
-.card{--a:var(--accent);width:100%;max-width:794px;background:var(--paper);padding:56px 64px 48px;
-  display:flex;flex-direction:column;min-height:1123px;box-shadow:0 1px 0 rgba(0,0,0,.06)}
-.card.project{--a:var(--accent-project)}
-.top{display:flex;justify-content:space-between;gap:12px;font-size:13px;letter-spacing:3px;color:var(--muted);font-weight:500}
-.rule{height:3px;width:64px;background:var(--a);margin-top:14px}
-h1{margin:26px 0 0;font-family:var(--serif);font-weight:900;font-size:46px;line-height:1.28;text-wrap:balance}
-h1 .hl{color:var(--a)}
-.why{margin:16px 0 0;font-size:16px;line-height:1.7;color:var(--body)}
-.label{margin-top:28px;font-size:14px;font-weight:700;letter-spacing:2px;color:var(--muted)}
-.points{margin-top:10px;display:flex;flex-direction:column;gap:14px}
-.pt{display:flex;gap:18px;border-top:1px solid var(--line);padding-top:12px}
-.num{font-family:var(--serif);font-weight:900;font-size:28px;line-height:1;color:var(--a);width:32px;flex-shrink:0}
-.pt b{display:block;font-size:19px;line-height:1.45}
-.pt span{display:block;font-size:15px;line-height:1.6;color:var(--body);margin-top:3px}
-.spacer{flex:1;min-height:24px}
-.write{border:2px solid var(--ink);padding:18px 22px;display:flex;flex-direction:column;gap:16px;margin-top:24px}
-.wl{display:flex;align-items:flex-end;gap:12px;font-size:15px;font-weight:700}
-.wl i{flex:1;border-bottom:1px solid var(--ink);height:22px}
-.quote{margin-top:16px;background:var(--ink);color:#fff;padding:18px 22px;font-family:var(--serif);font-weight:700;font-size:21px;line-height:1.5}
+/* 工具栏 */
+.bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 16px;background:var(--ink);color:#fff;font-size:14px}
+.bar .brand{font-weight:700;margin-right:auto}
+.bar label{display:flex;align-items:center;gap:6px;color:#D9D9D9;font-size:13px}
+.bar select{background:#fff;color:var(--ink);border:0;padding:8px 10px;min-height:40px}
+.bar button{font-weight:700;background:#fff;color:var(--ink);border:0;padding:8px 14px;min-height:40px;cursor:pointer}
+.bar button.ghost{background:transparent;color:#fff;border:1px solid #8A8A8A}
 
-/* 项目卡 */
-.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);margin-top:24px}
-.cell{padding:14px 16px;border-bottom:1px solid var(--line)}
-.cell:nth-child(odd){border-right:1px solid var(--line)}
-.cell.full{grid-column:1/-1;border-right:0}
-.cell:last-child,.cell.last{border-bottom:0}
-.k{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--muted)}
-.v{margin-top:6px;font-size:16px;line-height:1.6;white-space:pre-line}
-.next{margin-top:20px;border:2px solid var(--a);padding:16px 20px}
-.next .k{color:var(--a)}
-.next .v{font-size:22px;font-weight:700;line-height:1.45}
-.list{margin-top:8px;display:flex;flex-direction:column;gap:8px}
-.li{display:flex;gap:10px;font-size:15px;line-height:1.55;border-top:1px solid var(--line);padding-top:8px}
-.box{width:15px;height:15px;border:2px solid var(--ink);flex-shrink:0;margin-top:3px}
-.dash{color:var(--a);font-weight:700;flex-shrink:0}
+.stack{display:flex;flex-direction:column;align-items:center;gap:28px;padding:24px 16px 56px}
+.slot{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.status{font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.status .bad{color:var(--warn);font-weight:700}
 
-/* 未渲染时的粘贴模式 */
-.editor{width:100%;max-width:794px;background:var(--paper);padding:24px;display:flex;flex-direction:column;gap:12px}
-.editor textarea{width:100%;min-height:320px;font:15px/1.6 var(--sans);padding:12px;border:1px solid var(--ink)}
+/* 编辑器 */
+.editor{margin:24px auto 0;width:calc(100% - 32px);max-width:794px;background:var(--paper);padding:20px;display:flex;flex-direction:column;gap:10px}
+.editor[hidden]{display:none}
+.editor textarea{width:100%;min-height:300px;font-size:15px;line-height:1.6;padding:12px;border:1px solid var(--ink)}
+.editor .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .editor label{font-weight:700}
-.editor button{align-self:flex-start;font:inherit;font-weight:700;background:var(--ink);color:#fff;border:0;padding:12px 18px;min-height:44px;cursor:pointer}
+.editor select,.editor button{border:1px solid var(--ink);background:#fff;padding:8px 12px;min-height:44px}
+.editor select{flex:1 1 220px;min-width:0;max-width:100%}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.editor button.primary{background:var(--ink);color:#fff;font-weight:700;cursor:pointer}
+.editor p{margin:0;font-size:13px;color:var(--muted);line-height:1.6}
 
-@media (max-width:600px){
-  .card{padding:28px 20px 24px;min-height:0}
-  h1{font-size:32px}
-  .pt b{font-size:17px}
-  .meta{grid-template-columns:1fr}
-  .cell:nth-child(odd){border-right:0}
+/* ===== 卡片基础 ===== */
+.card{--a:#B4410F;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;position:relative;overflow:hidden}
+.top{display:flex;justify-content:space-between;gap:12px;font-size:13px;letter-spacing:3px;color:var(--muted);font-weight:500}
+.rule{height:3px;width:64px;background:var(--a);margin-top:14px;flex-shrink:0}
+.card h1{margin:24px 0 0;font-family:var(--serif);font-weight:900;font-size:44px;line-height:1.28;text-wrap:balance}
+.card h1 .hl{color:var(--a)}
+.lead{margin:14px 0 0;font-size:16px;line-height:1.7;color:var(--body)}
+.lead b{color:var(--ink)}
+.label{margin-top:22px;font-size:13px;font-weight:700;letter-spacing:2px;color:var(--muted)}
+.spacer{flex:1 1 auto;min-height:14px}
+.spacer.notes{margin-top:22px;position:relative;background:repeating-linear-gradient(to bottom,transparent 0,transparent 33px,#C8C8C8 33px,#C8C8C8 34px);background-position:0 26px;background-repeat:repeat-y;border-top:1px solid var(--line);margin-bottom:6px}
+.spacer.notes::before{content:"备注";display:block;padding-top:8px;font-size:13px;font-weight:700;letter-spacing:2px;color:var(--muted)}
+@media print{.spacer.notes{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+.numbered{margin-top:8px;display:flex;flex-direction:column;gap:12px}
+.pt{display:flex;gap:16px;border-top:1px solid var(--line);padding-top:10px}
+.num{font-family:var(--serif);font-weight:900;font-size:26px;line-height:1;color:var(--a);width:30px;flex-shrink:0}
+.pt b{display:block;font-size:18px;line-height:1.45}
+.pt span{display:block;font-size:14px;line-height:1.6;color:var(--body);margin-top:2px}
+
+.steps{margin-top:8px;display:flex;flex-direction:column}
+.step{display:flex;align-items:flex-start;gap:14px;border-top:1px solid var(--line);padding:10px 0}
+.step:last-child{border-bottom:1px solid var(--line)}
+.step .sn{width:30px;height:30px;flex-shrink:0;border-radius:50%;background:var(--a);color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.step .st{flex:1;font-size:17px;line-height:1.55;padding-top:3px}
+.step .sb{width:18px;height:18px;border:2px solid var(--ink);flex-shrink:0;margin-top:6px}
+
+.list,.checks,.history{margin-top:8px;display:flex;flex-direction:column}
+.li{display:flex;gap:10px;font-size:15px;line-height:1.55;border-top:1px solid var(--hair);padding:7px 0}
+.li:first-child{border-top-color:var(--line)}
+.li .dash{color:var(--a);font-weight:700;flex-shrink:0}
+.li .box{width:16px;height:16px;border:2px solid var(--ink);flex-shrink:0;margin-top:3px}
+.history .li .d{font-weight:700;flex-shrink:0;min-width:92px;font-variant-numeric:tabular-nums}
+
+.hl-box{margin-top:18px;border:2px solid var(--a);padding:14px 18px}
+.hl-box .k{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--a)}
+.hl-box .v{margin-top:6px;font-size:20px;font-weight:700;line-height:1.45;white-space:pre-line}
+
+.cells{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);margin-top:18px}
+.cells .c{padding:12px 14px}
+.cells .c+.c{border-left:1px solid var(--line)}
+.cells.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cells.n1{grid-template-columns:1fr}
+.c .k{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--muted)}
+.c .v{margin-top:5px;font-size:15px;line-height:1.6;white-space:pre-line}
+
+.options{margin-top:8px;display:grid;gap:8px}
+.opt{border:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.opt b{font-size:16px;line-height:1.4}
+.opt span{font-size:13px;line-height:1.55;color:var(--body)}
+.opt.picked{border:2px solid var(--a)}
+.opt .tag{align-self:flex-start;font-size:12px;font-weight:700;color:#fff;background:var(--a);padding:1px 6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+.layers{margin-top:16px;display:flex;flex-direction:column;gap:6px}
+.ly{display:flex;border:1px solid var(--line)}
+.ly .ln{width:104px;flex-shrink:0;padding:9px 10px;font-weight:700;font-size:14px;border-right:1px solid var(--line);color:var(--a);display:flex;align-items:center}
+.ly .lc{flex:1;padding:8px 10px;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.ly .chip{border:1px solid #8A8A8A;padding:2px 7px;font-size:13px;line-height:1.5}
+
+.write{border:2px solid var(--ink);padding:14px 18px;display:flex;flex-direction:column;gap:14px;margin-top:16px}
+.wl{display:flex;align-items:flex-end;gap:12px;font-size:14px;font-weight:700}
+.wl i{flex:1;border-bottom:1px solid var(--ink);height:20px}
+
+.tracker{margin-top:8px;display:grid;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.tracker div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);height:44px;padding:4px 6px;font-size:11px;color:var(--muted)}
+
+.days{margin-top:8px;display:flex;flex-direction:column}
+.day{display:flex;align-items:flex-end;gap:12px;border-top:1px solid var(--hair);padding:8px 0 6px}
+.day:first-child{border-top-color:var(--line)}
+.day b{width:44px;font-size:14px;flex-shrink:0}
+.day i{flex:1;border-bottom:1px dotted #8A8A8A;height:18px}
+.day .box{width:16px;height:16px;border:2px solid var(--ink);flex-shrink:0}
+
+.quote{margin-top:14px;background:var(--ink);color:#fff;padding:16px 20px;font-family:var(--serif);font-weight:700;font-size:20px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+/* ===== 尺寸 ===== */
+/* A4 / A5：版面按 A4 设计（794×1123），A5 打印时整体缩放 */
+.m-a4 .card,.m-a5 .card{width:794px;height:1122px;padding:56px 64px 48px}
+.m-a5 .card{zoom:.7046}
+/* 手机壁纸：上方留给时钟 */
+.m-phone .card{width:390px;height:844px;padding:180px 26px 30px}
+.m-phone .card h1{font-size:32px;margin-top:18px}
+.m-phone .top{font-size:12px;letter-spacing:2px}
+.m-phone .pt b{font-size:16px}.m-phone .pt span{font-size:13px}
+.m-phone .hl-box .v{font-size:18px}
+.m-phone .quote{font-size:17px;padding:14px 16px}
+.m-phone .step .st{font-size:15px}
+.m-phone .cells{grid-template-columns:1fr}
+.m-phone .cells .c+.c{border-left:0;border-top:1px solid var(--line)}
+/* 桌面小组件 */
+.m-widget .card{width:360px;height:360px;padding:26px 24px}
+.m-widget .card h1{font-size:26px;margin-top:14px}
+.m-widget .top{font-size:11px;letter-spacing:2px}
+.m-widget .rule{margin-top:10px;width:40px}
+.m-widget .hl-box{margin-top:12px;padding:10px 12px}
+.m-widget .hl-box .v{font-size:16px}
+.m-widget .quote{font-size:15px;padding:10px 12px}
+.m-widget .pt{padding-top:6px}.m-widget .pt b{font-size:14px}.m-widget .pt span{display:none}
+.m-widget .num{font-size:18px;width:20px}
+.m-widget .numbered{gap:6px}
+.m-widget .li{font-size:13px;padding:4px 0}
+
+/* 屏幕较窄时 A4/A5 改为流式阅读，不做溢出检查 */
+@media screen and (max-width:840px){
+  .m-a4 .card,.m-a5 .card{width:100%;max-width:794px;height:auto;min-height:0;padding:28px 20px 24px;zoom:1}
+  .m-a4 .card h1,.m-a5 .card h1{font-size:30px}
+  .m-a4 .pt b,.m-a5 .pt b{font-size:16px}
+  .m-a4 .cells,.m-a5 .cells{grid-template-columns:1fr}
+  .m-a4 .cells .c+.c,.m-a5 .cells .c+.c{border-left:0;border-top:1px solid var(--line)}
+  .m-a4 .ly,.m-a5 .ly{flex-direction:column}
+  .m-a4 .ly .ln,.m-a5 .ly .ln{width:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .m-a4 .options,.m-a5 .options{grid-template-columns:1fr!important}
 }
-@page{size:A4;margin:0}
+@media screen and (max-width:420px){
+  .m-phone .card,.m-widget .card{zoom:calc(100vw / 420px)}
+}
+
 @media print{
   html,body{background:#fff}
-  .bar,.editor{display:none!important}
-  .stack{padding:0;gap:0;display:block}
-  .card{width:210mm;max-width:none;height:297mm;min-height:0;overflow:hidden;padding:15mm 17mm 13mm;
-    box-shadow:none;break-after:page;page-break-after:always}
-  .card:last-child{break-after:auto;page-break-after:auto}
-  .quote{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .next,.rule{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .bar,.editor,.status{display:none!important}
+  .stack{display:block;padding:0}
+  .slot{display:block}
+  .card{break-after:page;page-break-after:always;box-shadow:none}
+  .slot:last-child .card{break-after:auto;page-break-after:auto}
 }
 </style>
 </head>
 <body>
 <div class="bar">
-  <div>一页卡 <span class="hint">· 打印选 A4、边距无，一张卡一页</span></div>
+  <div class="brand">一页卡</div>
+  <label>尺寸
+    <select id="size" aria-label="尺寸">
+      <option value="a4">A4 打印</option>
+      <option value="a5">A5 打印</option>
+      <option value="phone">手机壁纸</option>
+      <option value="widget">桌面小组件</option>
+    </select>
+  </label>
+  <button type="button" class="ghost" id="editBtn">编辑</button>
   <button type="button" id="printBtn">打印</button>
 </div>
+
+<section class="editor" id="editor" hidden>
+  <label for="paste">卡片文本（多张卡用单独一行 ---- 分隔）</label>
+  <textarea id="paste" spellcheck="false"></textarea>
+  <div class="row">
+    <label for="example" class="sr">示例</label>
+    <select id="example" aria-label="载入示例"><option value="">载入示例…</option></select>
+    <button type="button" class="primary" id="renderBtn">生成卡片</button>
+  </div>
+  <p>不写“类型：”也可以，会按字段自动识别。打印时选对应纸张、边距“无”，勾选“背景图形”。</p>
+</section>
+
 <textarea id="src" hidden>{{CARD_TEXT}}</textarea>
+<script type="application/json" id="types-data">{"version": "0.2.0", "kinds": {"eyebrow": "页眉左侧小字", "date": "页眉右侧日期", "title": "大标题，可用 / 分两行，第二行强调色", "lead": "一段说明文字", "numbered": "编号要点，每行一条，格式：动作——说明", "steps": "编号步骤，每行一步，带打勾框", "list": "短横列表，每行一条", "checks": "勾选框列表，每行一条", "highlight": "强调色框，放最重要的一句", "cell": "并排小格（相邻的 cell 自动成组）", "options": "选项格，每行一个，格式：选项名——说明", "layers": "分层带，每行一层，格式：层名：内容、内容", "write": "手写线，用、分隔多个空", "tracker": "打卡格，填天数（如 30）", "days": "周一到周日的每日格", "history": "时间线，每行：日期 一件事", "quote": "底部黑条金句"}, "types": [{"id": "principle", "name": "原则卡", "aliases": ["原则", "方法卡", "规则卡"], "when": "一个方法、规则、心法、判断标准，想天天看到", "accent": "#B4410F", "maxChars": 300, "detect": ["要点", "金句", "为什么"], "fields": [{"key": "卡名", "kind": "eyebrow", "hint": "2–6 字"}, {"key": "标题", "kind": "title", "hint": "一句话结论，≤16 字，可用 / 分两行"}, {"key": "为什么", "kind": "lead", "hint": "一句"}, {"key": "要点", "kind": "numbered", "label": "怎么做", "hint": "3–5 条，动作——一句说明"}, {"key": "手写区", "kind": "write", "hint": "1–2 个空，用、分隔；可省略"}, {"key": "金句", "kind": "quote", "hint": "≤20 字"}], "compact": ["卡名", "标题", "要点", "金句"], "widget": ["标题", "金句"]}, {"id": "project", "name": "项目卡", "aliases": ["项目"], "when": "一个进行中的项目，防止隔一阵就忘、接不上", "accent": "#2F6B3A", "maxChars": 320, "detect": ["项目", "下一步", "现在在哪", "卡点"], "fields": [{"key": "项目", "kind": "title", "hint": "项目名"}, {"key": "更新", "kind": "date", "hint": "YYYY-MM-DD"}, {"key": "目标", "kind": "lead", "label": "目标", "hint": "一句话"}, {"key": "下一步", "kind": "highlight", "hint": "只写 1 个，15 分钟内能开始"}, {"key": "现在在哪", "kind": "cell", "hint": "阶段 + 最新进展，≤2 行"}, {"key": "卡点", "kind": "cell", "hint": "没有就写 无"}, {"key": "已定的事", "kind": "list", "hint": "最多 3 条，日期 + 一件事"}, {"key": "待我拍板", "kind": "checks", "hint": "最多 2 条"}, {"key": "历史", "kind": "history", "hint": "最多 5 条，日期 + 当时的进展；更新时把旧的现在在哪移到这里"}], "compact": ["项目", "更新", "下一步", "卡点", "待我拍板"], "widget": ["项目", "下一步"]}, {"id": "decision", "name": "决策卡", "aliases": ["决策", "选择卡"], "when": "在几个选项之间做选择，或已经做了选择需要记下理由", "accent": "#1D4E89", "maxChars": 320, "detect": ["问题", "选项", "我的选择", "撤回条件"], "fields": [{"key": "问题", "kind": "title", "hint": "要决定的事，一句话"}, {"key": "日期", "kind": "date", "hint": "YYYY-MM-DD"}, {"key": "底线", "kind": "lead", "label": "底线", "hint": "最坏情况下必须保住什么"}, {"key": "选项", "kind": "options", "hint": "2–4 个，选项名——代价或收益"}, {"key": "准则", "kind": "list", "hint": "2–3 条，靠什么判断"}, {"key": "我的选择", "kind": "highlight", "hint": "选了哪个 + 一句理由；未定写 [待定]"}, {"key": "撤回条件", "kind": "cell", "hint": "出现什么情况就改主意"}, {"key": "复盘日", "kind": "cell", "hint": "哪天回头看"}], "compact": ["问题", "我的选择", "撤回条件", "复盘日"], "widget": ["问题", "我的选择"]}, {"id": "review", "name": "复盘卡", "aliases": ["复盘", "总结卡"], "when": "一件事做完了（成或败），提炼下次怎么做", "accent": "#7A4B9A", "maxChars": 300, "detect": ["事件", "结果", "下次"], "fields": [{"key": "事件", "kind": "title", "hint": "复盘的是什么，一句话"}, {"key": "日期", "kind": "date", "hint": "YYYY-MM-DD"}, {"key": "目标", "kind": "cell", "hint": "原本想要什么"}, {"key": "结果", "kind": "cell", "hint": "实际发生了什么，用事实"}, {"key": "做对了", "kind": "list", "hint": "1–3 条"}, {"key": "做错了", "kind": "list", "hint": "1–3 条"}, {"key": "下次", "kind": "numbered", "hint": "1–3 条，下次具体怎么做"}, {"key": "一句话", "kind": "quote", "hint": "这次学到的，≤20 字"}], "compact": ["事件", "下次", "一句话"], "widget": ["事件", "一句话"]}, {"id": "sop", "name": "流程卡", "aliases": ["流程", "SOP", "操作卡", "手册"], "when": "照着步骤做的事，尤其是交给别人（如家人、同事）执行", "accent": "#0F6E6E", "maxChars": 360, "detect": ["步骤", "什么时候用", "注意"], "fields": [{"key": "流程", "kind": "title", "hint": "做什么，一句话"}, {"key": "什么时候用", "kind": "lead", "label": "什么时候用", "hint": "触发条件"}, {"key": "准备", "kind": "list", "hint": "需要的东西；可省略"}, {"key": "步骤", "kind": "steps", "hint": "3–8 步，每步一个动作，写清多少、多久"}, {"key": "注意", "kind": "checks", "hint": "1–3 条容易出错的地方"}, {"key": "出问题找", "kind": "highlight", "hint": "找谁、怎么联系"}], "compact": ["流程", "步骤", "出问题找"], "widget": ["流程", "出问题找"]}, {"id": "knowledge", "name": "知识卡", "aliases": ["知识", "概念卡", "学习卡"], "when": "学到的一个概念、框架、课程要点，要落到自己身上", "accent": "#8A6A12", "maxChars": 320, "detect": ["概念", "一句话解释", "用到我这"], "fields": [{"key": "概念", "kind": "title", "hint": "概念名或一句话结论"}, {"key": "来源", "kind": "date", "hint": "书 / 课 / 人，可省略"}, {"key": "一句话解释", "kind": "lead", "hint": "用大白话"}, {"key": "框架", "kind": "numbered", "label": "核心框架", "hint": "3–5 条，名称——一句说明"}, {"key": "用到我这", "kind": "checks", "hint": "1–3 条，落到自己项目的具体动作"}, {"key": "记住", "kind": "quote", "hint": "≤20 字"}], "compact": ["概念", "一句话解释", "用到我这"], "widget": ["概念", "记住"]}, {"id": "map", "name": "架构卡", "aliases": ["架构", "地图卡", "结构卡", "系统卡"], "when": "一个系统、流程链或组织的结构，看清各部分怎么连起来", "accent": "#2F6B3A", "maxChars": 380, "detect": ["层", "流向"], "fields": [{"key": "名称", "kind": "eyebrow", "hint": "系统名"}, {"key": "标题", "kind": "title", "hint": "一句话说明这套结构的核心"}, {"key": "层", "kind": "layers", "hint": "3–7 层，自上而下，层名：内容、内容"}, {"key": "流向", "kind": "highlight", "hint": "数据或事情怎么流动，用 → 连接"}, {"key": "原则", "kind": "list", "hint": "1–3 条设计原则；可省略"}], "compact": ["名称", "标题", "流向"], "widget": ["标题", "流向"]}, {"id": "habit", "name": "习惯卡", "aliases": ["习惯", "打卡卡"], "when": "要养成或戒掉的一个习惯，需要每天打卡", "accent": "#B4410F", "maxChars": 260, "detect": ["习惯", "最低版本", "天数"], "fields": [{"key": "习惯", "kind": "title", "hint": "要养成或戒掉什么，一句话"}, {"key": "为什么", "kind": "lead", "hint": "一句"}, {"key": "规则", "kind": "numbered", "hint": "2–4 条，靠环境不靠意志力"}, {"key": "最低版本", "kind": "highlight", "hint": "状态最差时也能做到的最小一步"}, {"key": "天数", "kind": "tracker", "hint": "7 / 14 / 21 / 30"}], "compact": ["习惯", "规则", "最低版本"], "widget": ["习惯", "最低版本"]}, {"id": "week", "name": "周计划卡", "aliases": ["周计划", "本周", "周卡"], "when": "规划一周：最多三件要事，每天写下推进了什么", "accent": "#1D4E89", "maxChars": 240, "detect": ["本周三件事", "不做"], "fields": [{"key": "周", "kind": "eyebrow", "hint": "如 10.13–10.19"}, {"key": "本周主题", "kind": "title", "hint": "这周最重要的一句话"}, {"key": "本周三件事", "kind": "numbered", "hint": "最多 3 件，做完是什么样子"}, {"key": "不做", "kind": "list", "hint": "1–3 件这周明确不碰的事"}, {"key": "每日", "kind": "days", "hint": "留空即可"}, {"key": "周日检查", "kind": "write", "hint": "如：完成了几件、下周第一件事"}], "compact": ["周", "本周主题", "本周三件事"], "widget": ["本周主题", "本周三件事"]}, {"id": "checklist", "name": "清单卡", "aliases": ["清单", "检查表"], "when": "每次做某件事前都要过一遍的检查项（出门、发布、上线、拍摄）", "accent": "#0F6E6E", "maxChars": 280, "detect": ["清单", "何时用"], "fields": [{"key": "清单", "kind": "title", "hint": "什么时候的清单，如：拍摄出发前"}, {"key": "何时用", "kind": "lead", "label": "何时用", "hint": "触发时机"}, {"key": "检查项", "kind": "checks", "hint": "5–12 项，每项可核对"}, {"key": "最容易漏", "kind": "highlight", "hint": "过去最常漏的一项"}], "compact": ["清单", "最容易漏", "检查项"], "widget": ["清单", "最容易漏"]}, {"id": "person", "name": "人物卡", "aliases": ["人物", "客户卡", "沟通卡"], "when": "一个客户、合作方或家人，记住对方要什么、约定过什么", "accent": "#7A4B9A", "maxChars": 300, "detect": ["对象", "对方要什么", "已约定"], "fields": [{"key": "对象", "kind": "title", "hint": "名字 + 身份"}, {"key": "更新", "kind": "date", "hint": "YYYY-MM-DD"}, {"key": "对方要什么", "kind": "cell", "hint": "对方真正在意的"}, {"key": "我能给", "kind": "cell", "hint": "我能提供的"}, {"key": "已约定", "kind": "list", "hint": "1–3 条，日期 + 约定"}, {"key": "别踩", "kind": "checks", "hint": "1–2 条雷区"}, {"key": "下次联系", "kind": "highlight", "hint": "什么时候、聊什么"}], "compact": ["对象", "下次联系", "已约定"], "widget": ["对象", "下次联系"]}]}</script>
+<script type="application/json" id="examples-data">{"principle": "类型：原则卡\n卡名：先做后想\n标题：想到第一步能动手，/ 就停止想。\n为什么：没有产出下一步动作的思考，只是\"准备感\"。\n要点：\n1. 思考设上限——最多 20 分钟，结束时写下一个 15 分钟内能开始的动作\n2. 卡住先做粗糙版——直接做一个很烂的初稿，有了实物再判断\n3. 截止要对别人负责——约好时间交东西，自己定的截止不算数\n4. 第一个小时只执行——不规划、不看资料，推进一件定好的事\n手写区：当前唯一主线、今天第一个动作\n金句：先做，后想。", "project": "类型：项目卡\n项目：社区活动报名页\n目标：让居民在手机上 1 分钟内完成活动报名\n现在在哪：表单已能提交，正在接短信通知\n下一步：用自己的手机提交一次报名，确认能收到短信\n卡点：短信模板还在审核 [待确认 审核时长]\n已定的事：\n- 2026-10-10 报名只收姓名和手机号\n- 2026-10-12 先不做在线支付\n待我拍板：\n- 是否设置人数上限\n历史：\n- 2026-10-08 页面初稿完成\n- 2026-10-11 表单接通数据库\n更新：2026-10-13", "decision": "类型：决策卡\n问题：接下来三个月，先找工作还是全职做自己的项目？\n日期：2026-10-13\n底线：每月固定支出必须有稳定收入覆盖\n选项：\n- 先找稳定工作——现金流稳，项目只能晚上推进\n- 全职做项目——进度快，但存款只够撑两个月\n- 接自由职业单——收入不稳，时间零碎\n准则：\n- 最坏结果扛得住吗\n- 能多快拿到真实反馈\n- 做错了能不能撤回\n我的选择：先找稳定工作，项目每周固定推进 8 小时\n撤回条件：项目连续两个月有付费用户，再考虑全职\n复盘日：2027-01-13", "review": "类型：复盘卡\n事件：第一次线下市集摆摊\n日期：2026-10-12\n目标：卖出 50 份，加 30 个微信\n结果：卖出 32 份，加了 41 个微信\n做对了：\n- 现场试吃，停留的人明显变多\n- 扫码送小样，加微信很顺\n做错了：\n- 下午 3 点就断货，备货按平时量算\n- 没准备零钱，错过几单\n下次：\n1. 备货按预计量的 1.5 倍——宁可剩也别断\n2. 前一天换好 300 元零钱——现金和扫码都要有\n3. 把试吃放在摊位最前面——让人先尝再看\n一句话：能让人尝到，就能卖出去。", "sop": "类型：流程卡\n流程：大棚早上通风\n什么时候用：每天早上 8–9 点，棚内温度超过 25℃ 时\n准备：\n- 手机（看温度）\n- 手套\n步骤：\n1. 先看手机上的棚内温度和湿度\n2. 温度超过 25℃，先开顶部风口一半\n3. 等 10 分钟，再看一次温度\n4. 还高于 28℃，把风口全开\n5. 中午 12 点前回来看一次，低于 20℃ 就关小\n注意：\n- 下雨天只开背风一侧\n- 大风天风口开小，防止吹坏棚膜\n出问题找：打电话给小李 138-0000-0000（示例号码）", "knowledge": "类型：知识卡\n概念：信息农业的决策链\n来源：大学公开课《农业信息学》\n一句话解释：先把地里的情况变成数据，再把数据变成\"什么时候、做多少、在哪做\"的决定。\n框架：\n1. 立体采集——区域看卫星和天气，园区看摄像头，田块看传感器和照片\n2. 定量分析——从凭经验判断，变成用数字和模型判断\n3. 精准决策——每条建议都要定时、定量、定位\n4. 闭环反馈——执行结果回写，规则越用越准\n用到我这：\n- 每条提醒都写清时间、数量、位置\n- 先做一条完整闭环，再加新功能\n记住：数据不变成决策，就只是数字。", "map": "类型：架构卡\n名称：智慧种植系统\n标题：数据从地里来，/ 决策回到地里去。\n层：\n- 用户层：农户、合作社、收购商\n- 触达层：小程序、消息推送、语音播报\n- 应用层：环境预警、拍照问诊、施肥处方、产销对接\n- 智能层：规则库、生长模型、图像识别\n- 数据层：传感器数据、地块档案、图片、知识库\n- 感知层：卫星和天气、摄像头、传感器、农户拍照\n流向：感知 → 诊断 → 决策 → 执行 → 反馈\n原则：\n- 能撤回的操作可以自动执行，撤回不了的必须人确认\n- 前台只给农户一句\"今天做什么\"", "habit": "类型：习惯卡\n习惯：戒掉睡前刷短视频\n为什么：熬夜会让第二天所有的事都变难。\n规则：\n1. 删掉短视频 App——想看就得重新下载\n2. 手机晚上 11 点放客厅充电——卧室里不放手机\n3. 想刷时先站起来——走两圈、洗把脸\n最低版本：今天就算刷了，也在 1 点前放下\n天数：30", "week": "类型：周计划卡\n周：10.13–10.19\n本周主题：只推一条主线：投出简历\n本周三件事：\n1. 简历改到 60 分——周二前发出第一份\n2. 投出 20 份——每天早上第一个小时投 5 份\n3. 约 1 位朋友内推——周四前发出消息\n不做：\n- 不开新项目\n- 不重做网站\n每日：\n周日检查：投了几份、收到几个回复", "checklist": "类型：清单卡\n清单：外拍出发前\n何时用：每次带设备出门拍摄前\n检查项：\n- 电池充满，带 2 块备用\n- 存储卡已格式化，带 1 张备用\n- 镜头和传感器已清洁\n- 三脚架快装板在机身上\n- 拍摄脚本或分镜已存到手机\n- 场地地址和联系人已确认\n- 雨衣或防雨罩\n- 充电宝和数据线\n最容易漏：三脚架快装板", "person": "类型：人物卡\n对象：王老板 · 室内设计工作室创始人\n更新：2026-10-13\n对方要什么：每月稳定来 10 个精准咨询，不想自己做内容\n我能给：每周 3 条案例笔记 + 每月一次数据复盘\n已约定：\n- 2026-10-01 先试运营一个月，月底看咨询量\n- 2026-10-08 每周五前交下周选题\n别踩：\n- 不要在周末发工作消息\n- 报价前先给案例，不要先谈价格\n下次联系：10 月 31 日，带 10 月数据复盘去面谈"}</script>
+<script type="application/json" id="default-size">"{{SIZE}}"</script>
 <main class="stack" id="stack"></main>
 
 <script>
 (function(){
-  var KEYS = ['卡名','标题','为什么','要点','手写区','金句','项目','目标','现在在哪','下一步','卡点','已定的事','待我拍板','更新'];
-  var LISTS = {'要点':1,'已定的事':1,'待我拍板':1};
-  var keyRe = new RegExp('^\\s*(' + KEYS.join('|') + ')\\s*[：:]\\s*(.*)$');
+  var TYPES = JSON.parse(document.getElementById('types-data').textContent).types;
+  var EXAMPLES = JSON.parse(document.getElementById('examples-data').textContent);
+  var BYID = {}; TYPES.forEach(function(t){ BYID[t.id] = t; });
+  var PH = '{' + '{';
+  var LIST_KINDS = {numbered:1,steps:1,list:1,checks:1,options:1,layers:1,history:1};
+  var PAGE = {a4:'A4', a5:'A5', phone:'390px 844px', widget:'360px 360px'};
+  var current = '', size = 'a4';
 
-  function el(tag, cls, text){
-    var e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (text != null) e.textContent = text;
-    return e;
-  }
-  function clean(s){ return s.replace(/^\s*(\d+[.、)）]|[-•·*])\s*/, '').trim(); }
+  // 所有字段名（含“类型”），用于解析
+  var KEYS = {'类型':1};
+  TYPES.forEach(function(t){ t.fields.forEach(function(f){ KEYS[f.key] = 1; }); });
+  var keyRe = new RegExp('^\\s*(' + Object.keys(KEYS).sort(function(a,b){return b.length-a.length;}).join('|') + ')\\s*[：:]\\s*(.*)$');
+
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function clean(s){ return s.replace(/^\s*(\d+\s*[.、)）]|[-•·*])\s*/, '').trim(); }
+  function splitPair(s){ var m = s.split(/\s*(?:——|—|--)\s*/); if (m.length > 1) return [m[0], m.slice(1).join('，')]; m = s.match(/^(.{1,14}?)[：:]\s*(.+)$/); return m ? [m[1], m[2]] : [s, '']; }
 
   function parse(block){
-    var d = {}, cur = null;
+    var d = {_order:[]}, cur = null;
     block.split(/\r?\n/).forEach(function(raw){
       var line = raw.replace(/\s+$/, '');
       if (!line.trim() || /^```/.test(line.trim())) return;
       var m = line.match(keyRe);
-      if (m){
-        cur = m[1];
-        if (LISTS[cur]) { d[cur] = []; if (m[2].trim()) d[cur].push(clean(m[2])); }
-        else d[cur] = m[2].trim();
-      } else if (cur){
-        if (LISTS[cur]) d[cur].push(clean(line));
-        else d[cur] = (d[cur] ? d[cur] + '\n' : '') + line.trim();
-      }
+      if (m){ cur = m[1]; d[cur] = {text: m[2].trim(), lines: m[2].trim() ? [clean(m[2])] : []}; d._order.push(cur); }
+      else if (cur){ d[cur].lines.push(clean(line)); d[cur].text += (d[cur].text ? '\n' : '') + line.trim(); }
     });
     return d;
   }
 
-  function header(card, left, right){
-    var top = el('div','top'); top.appendChild(el('div',null,left||'')); top.appendChild(el('div',null,right||''));
-    card.appendChild(top); card.appendChild(el('div','rule'));
+  function detect(d){
+    if (d['类型'] && d['类型'].text){
+      var v = d['类型'].text.replace(/\s/g,'');
+      for (var i = 0; i < TYPES.length; i++){
+        var t = TYPES[i];
+        if (v === t.id || v === t.name || t.aliases.indexOf(v) > -1 || v.indexOf(t.name) > -1) return t;
+      }
+    }
+    var best = null, bestScore = 0;
+    TYPES.forEach(function(t){
+      var s = 0; t.detect.forEach(function(k){ if (d[k]) s += 2; });
+      t.fields.forEach(function(f){ if (d[f.key]) s += 1; });
+      if (s > bestScore){ best = t; bestScore = s; }
+    });
+    return best || TYPES[0];
   }
+
+  function charCount(d){ var n = 0; d._order.forEach(function(k){ if (k !== '类型') n += d[k].text.replace(/\s/g,'').length; }); return n; }
+
+  // ---------- 各种字段的画法 ----------
   function title(text){
     var h = el('h1'); var parts = (text||'').split(/\s*[\/／]\s*/);
     h.appendChild(document.createTextNode(parts[0] || ''));
     if (parts.length > 1){ h.appendChild(el('br')); h.appendChild(el('span','hl',parts.slice(1).join(''))); }
     return h;
   }
-  function writeBox(labels){
-    var w = el('div','write');
-    labels.forEach(function(t){ var r = el('div','wl'); r.appendChild(el('span',null,t)); r.appendChild(el('i')); w.appendChild(r); });
-    return w;
+  function label(f){ return el('div','label', f.label || f.key); }
+  function cap(lines, mode){ return mode === 'widget' ? lines.slice(0,3) : mode === 'phone' ? lines.slice(0,5) : lines; }
+
+  var DRAW = {
+    title: function(f, v){ return title(v.text); },
+    lead: function(f, v){ var p = el('p','lead'); if (f.label){ p.appendChild(el('b',null,f.label + '：')); } p.appendChild(document.createTextNode(v.text)); return p; },
+    numbered: function(f, v, ctx){
+      var frag = document.createDocumentFragment(); if (ctx.mode !== 'widget') frag.appendChild(label(f));
+      var box = el('div','numbered');
+      cap(v.lines, ctx.mode).forEach(function(s, i){ var pr = splitPair(s); var row = el('div','pt'); row.appendChild(el('div','num',String(i+1))); var b = el('div'); b.appendChild(el('b',null,pr[0])); if (pr[1]) b.appendChild(el('span',null,pr[1])); row.appendChild(b); box.appendChild(row); });
+      frag.appendChild(box); return frag;
+    },
+    steps: function(f, v, ctx){
+      var frag = document.createDocumentFragment(); frag.appendChild(label(f));
+      var box = el('div','steps');
+      cap(v.lines, ctx.mode).forEach(function(s, i){ var r = el('div','step'); r.appendChild(el('span','sn',String(i+1))); r.appendChild(el('span','st',s)); r.appendChild(el('span','sb')); box.appendChild(r); });
+      frag.appendChild(box); return frag;
+    },
+    list: function(f, v, ctx){ return listOf(f, v, ctx, 'dash'); },
+    checks: function(f, v, ctx){ return listOf(f, v, ctx, 'box'); },
+    history: function(f, v, ctx){
+      var frag = document.createDocumentFragment(); frag.appendChild(label(f));
+      var box = el('div','history');
+      cap(v.lines, ctx.mode).slice(-5).forEach(function(s){ var m = s.match(/^(\d{4}[-./]\d{1,2}[-./]\d{1,2}|\d{1,2}[-./]\d{1,2})\s*(.*)$/); var r = el('div','li'); r.appendChild(el('span','d', m ? m[1] : '·')); r.appendChild(el('span',null, m ? m[2] : s)); box.appendChild(r); });
+      frag.appendChild(box); return frag;
+    },
+    highlight: function(f, v){ var b = el('div','hl-box'); b.appendChild(el('div','k',f.label || f.key)); b.appendChild(el('div','v',v.text)); return b; },
+    options: function(f, v, ctx){
+      var frag = document.createDocumentFragment(); frag.appendChild(label(f));
+      var box = el('div','options'); var n = v.lines.length; box.style.gridTemplateColumns = 'repeat(' + (ctx.mode === 'phone' ? 1 : (n === 3 ? 3 : 2)) + ',minmax(0,1fr))';
+      var chosen = (ctx.d['我的选择'] && ctx.d['我的选择'].text) || '';
+      v.lines.forEach(function(s){ var pr = splitPair(s); var o = el('div','opt'); var hit = pr[0] && chosen.indexOf(pr[0].slice(0, Math.min(6, pr[0].length))) > -1; if (hit){ o.classList.add('picked'); o.appendChild(el('span','tag','已选')); } o.appendChild(el('b',null,pr[0])); if (pr[1]) o.appendChild(el('span',null,pr[1])); box.appendChild(o); });
+      frag.appendChild(box); return frag;
+    },
+    layers: function(f, v){
+      var box = el('div','layers');
+      v.lines.forEach(function(s){ var m = s.match(/^(.{1,10}?)[：:]\s*(.*)$/); var r = el('div','ly'); r.appendChild(el('div','ln', m ? m[1] : s)); var c = el('div','lc'); (m ? m[2] : '').split(/[、,，;；]/).map(function(x){return x.trim();}).filter(Boolean).forEach(function(x){ c.appendChild(el('span','chip',x)); }); r.appendChild(c); box.appendChild(r); });
+      return box;
+    },
+    write: function(f, v){ var w = el('div','write'); var labels = (v.text || '').split(/[、,，;；\n]/).map(function(s){return s.trim();}).filter(Boolean); if (!labels.length) labels = ['']; labels.forEach(function(t){ var r = el('div','wl'); r.appendChild(el('span',null,t)); r.appendChild(el('i')); w.appendChild(r); }); return w; },
+    tracker: function(f, v){
+      var n = parseInt(v.text, 10); if (!(n > 0)) n = 30; n = Math.min(n, 60);
+      var cols = n % 7 === 0 ? 7 : (n <= 10 ? n : (n % 6 === 0 ? 6 : (n % 5 === 0 ? 10 : 7)));
+      var frag = document.createDocumentFragment(); frag.appendChild(el('div','label', n + ' 天打卡'));
+      var g = el('div','tracker'); g.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,1fr))';
+      for (var i = 1; i <= n; i++) g.appendChild(el('div',null,'D' + i));
+      frag.appendChild(g); return frag;
+    },
+    days: function(f){
+      var frag = document.createDocumentFragment(); frag.appendChild(label(f));
+      var box = el('div','days');
+      ['周一','周二','周三','周四','周五','周六','周日'].forEach(function(dn){ var r = el('div','day'); r.appendChild(el('b',null,dn)); r.appendChild(el('i')); r.appendChild(el('span','box')); box.appendChild(r); });
+      frag.appendChild(box); return frag;
+    },
+    quote: function(f, v){ return el('div','quote', v.text); }
+  };
+  function listOf(f, v, ctx, mark){
+    var frag = document.createDocumentFragment(); if (ctx.mode !== 'widget') frag.appendChild(label(f));
+    var box = el('div', mark === 'box' ? 'checks' : 'list');
+    cap(v.lines, ctx.mode).forEach(function(s){ var r = el('div','li'); r.appendChild(mark === 'box' ? el('span','box') : el('span','dash','—')); r.appendChild(el('span',null,s)); box.appendChild(r); });
+    frag.appendChild(box); return frag;
   }
 
-  function principle(d){
-    var c = el('article','card');
-    header(c, d['卡名'] || '一页卡', '');
-    c.appendChild(title(d['标题']));
-    if (d['为什么']) c.appendChild(el('p','why',d['为什么']));
-    if (d['要点'] && d['要点'].length){
-      var ps = el('div','points');
-      d['要点'].forEach(function(p, i){
-        var row = el('div','pt'); row.appendChild(el('div','num',String(i+1)));
-        var body = el('div'); var bits = p.split(/\s*(?:——|—|--|：|:)\s*/);
-        body.appendChild(el('b',null,bits[0]));
-        if (bits.length > 1) body.appendChild(el('span',null,bits.slice(1).join('，')));
-        row.appendChild(body); ps.appendChild(row);
-      });
-      c.appendChild(ps);
+  function buildCard(d, t, mode){
+    var card = el('article','card t-' + t.id); card.style.setProperty('--a', t.accent);
+    var fields = t.fields;
+    if (mode === 'phone' || mode === 'widget'){
+      var keep = t[mode === 'phone' ? 'compact' : 'widget'];
+      fields = fields.filter(function(f){ return keep.indexOf(f.key) > -1 || f.kind === 'eyebrow' || f.kind === 'date'; });
     }
-    c.appendChild(el('div','spacer'));
-    if (d['手写区']) c.appendChild(writeBox(d['手写区'].split(/[、,，;；]/).map(function(s){return s.trim();}).filter(Boolean)));
-    if (d['金句']) c.appendChild(el('div','quote',d['金句']));
-    return c;
-  }
-
-  function project(d){
-    var c = el('article','card project');
-    header(c, '项目卡', d['更新'] ? '更新 ' + d['更新'] : '');
-    c.appendChild(title(d['项目']));
-    if (d['目标']) c.appendChild(el('p','why','目标：' + d['目标']));
-    if (d['下一步']){
-      var n = el('div','next'); n.appendChild(el('div','k','下一步')); n.appendChild(el('div','v',d['下一步'])); c.appendChild(n);
-    }
-    var meta = el('div','meta');
-    function cell(k, v, full){ var x = el('div','cell' + (full?' full':'')); x.appendChild(el('div','k',k)); x.appendChild(el('div','v',v||'—')); meta.appendChild(x); return x; }
-    cell('现在在哪', d['现在在哪'], false);
-    var last = cell('卡点', d['卡点'] || '无', false);
-    meta.lastChild.classList.add('last'); meta.children[0].classList.add('last');
-    c.appendChild(meta);
-    function list(k, items, mark){
-      if (!items || !items.length) return;
-      c.appendChild(el('div','label',k));
-      var l = el('div','list');
-      items.forEach(function(t){ var r = el('div','li'); r.appendChild(mark === 'box' ? el('span','box') : el('span','dash','—')); r.appendChild(el('span',null,t)); l.appendChild(r); });
-      c.appendChild(l);
-    }
-    list('已定的事', d['已定的事'], 'dash');
-    list('待我拍板', d['待我拍板'], 'box');
-    c.appendChild(el('div','spacer'));
-    c.appendChild(writeBox(['这次推进了什么','下次从哪接上']));
-    return c;
+    var eyebrow = '', date = '';
+    t.fields.forEach(function(f){ if (f.kind === 'eyebrow' && d[f.key]) eyebrow = d[f.key].text; if (f.kind === 'date' && d[f.key]) date = d[f.key].text; });
+    var top = el('div','top'); top.appendChild(el('div',null, eyebrow ? (eyebrow + ' · ' + t.name) : t.name)); top.appendChild(el('div',null,date)); card.appendChild(top); card.appendChild(el('div','rule'));
+    var ctx = {d:d, mode:mode}, cells = null, bottom = [];
+    fields.forEach(function(f){
+      if (f.kind === 'eyebrow' || f.kind === 'date') return;
+      var v = d[f.key]; if (!v || (!v.text && !v.lines.length && f.kind !== 'days' && f.kind !== 'tracker')) { if (f.kind !== 'days') return; v = v || {text:'',lines:[]}; }
+      if (f.kind === 'cell'){
+        if (!cells){ cells = el('div','cells'); card.appendChild(cells); }
+        var c = el('div','c'); c.appendChild(el('div','k',f.label || f.key)); c.appendChild(el('div','v',v.text)); cells.appendChild(c);
+        cells.className = 'cells n' + Math.min(cells.children.length, 3); return;
+      }
+      cells = null;
+      if (f.kind === 'write' || f.kind === 'quote'){ bottom.push([f, v]); return; }
+      card.appendChild(DRAW[f.kind](f, v, ctx));
+    });
+    card.appendChild(el('div','spacer'));
+    bottom.forEach(function(p){ card.appendChild(DRAW[p[0].kind](p[0], p[1], ctx)); });
+    return card;
   }
 
   function render(text){
+    current = text;
     var stack = document.getElementById('stack'); stack.textContent = '';
-    text.split(/^\s*-{4,}\s*$/m).map(function(s){return s.trim();}).filter(Boolean).forEach(function(b){
-      var d = parse(b);
-      stack.appendChild(d['项目'] ? project(d) : principle(d));
+    stack.className = 'stack m-' + size;
+    document.getElementById('pagesize').textContent = '@page{size:' + PAGE[size] + ';margin:0}';
+    var blocks = text.split(/^\s*-{4,}\s*$/m).map(function(s){return s.trim();}).filter(Boolean);
+    blocks.forEach(function(b){
+      var d = parse(b), t = detect(d);
+      var slot = el('div','slot');
+      var st = el('div','status'); st.appendChild(el('span',null,t.name));
+      var n = charCount(d); var cnt = el('span', n > t.maxChars ? 'bad' : null, n + ' / ' + t.maxChars + ' 字'); st.appendChild(cnt);
+      slot.appendChild(st);
+      var card = buildCard(d, t, size); slot.appendChild(card); stack.appendChild(slot);
+      requestAnimationFrame(function(){
+        var fixed = (size === 'a4' || size === 'a5') && window.innerWidth > 840;
+        var sp = card.querySelector('.spacer');
+        if (fixed && sp && sp.clientHeight > 170) sp.classList.add('notes');
+        if (!fixed && size !== 'phone' && size !== 'widget') return;
+        if (card.scrollHeight > card.clientHeight + 2){ var w = el('span','bad','超出一页：请删减内容'); st.appendChild(w); card.setAttribute('data-overflow','1'); }
+      });
     });
   }
 
-  function editor(){
-    var stack = document.getElementById('stack');
-    var box = el('div','editor');
-    var lab = el('label',null,'把 agent 给的卡片文本粘贴到这里'); lab.setAttribute('for','paste');
-    var ta = el('textarea'); ta.id = 'paste';
-    var btn = el('button',null,'生成卡片'); btn.type = 'button';
-    btn.onclick = function(){ if (ta.value.trim()) { render(ta.value); box.remove(); } };
-    box.appendChild(lab); box.appendChild(ta); box.appendChild(btn);
-    stack.appendChild(box);
-  }
-
+  // ---------- 交互 ----------
+  var editor = document.getElementById('editor'), paste = document.getElementById('paste'), sel = document.getElementById('size'), ex = document.getElementById('example');
+  TYPES.forEach(function(t){ if (EXAMPLES[t.id]){ var o = el('option',null,t.name + ' · ' + t.when); o.value = t.id; ex.appendChild(o); } });
+  ex.onchange = function(){ if (ex.value){ paste.value = EXAMPLES[ex.value]; render(paste.value); ex.value = ''; } };
+  document.getElementById('renderBtn').onclick = function(){ if (paste.value.trim()) render(paste.value); };
+  document.getElementById('editBtn').onclick = function(){ editor.hidden = !editor.hidden; if (!editor.hidden){ paste.value = current; paste.focus(); } };
   document.getElementById('printBtn').onclick = function(){ window.print(); };
+  sel.onchange = function(){ size = sel.value; try { history.replaceState(null, '', '#size=' + size); } catch(e){} if (current) render(current); };
+
+  var hash = (location.hash.match(/size=(a4|a5|phone|widget)/) || [])[1];
+  var def = JSON.parse(document.getElementById('default-size').textContent);
+  size = hash || (PAGE[def] ? def : 'a4'); sel.value = size;
   var src = document.getElementById('src').value.trim();
-  if (!src || src === '{' + '{CARD_TEXT}' + '}') editor(); else render(src);
+  if (!src || src.indexOf(PH + 'CARD_TEXT') === 0){ editor.hidden = false; paste.value = EXAMPLES.principle || ''; if (paste.value) render(paste.value); }
+  else render(src);
 })();
 </script>
 </body>

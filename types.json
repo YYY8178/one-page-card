@@ -1,0 +1,237 @@
+{
+  "version": "0.2.0",
+  "kinds": {
+    "eyebrow": "页眉左侧小字",
+    "date": "页眉右侧日期",
+    "title": "大标题，可用 / 分两行，第二行强调色",
+    "lead": "一段说明文字",
+    "numbered": "编号要点，每行一条，格式：动作——说明",
+    "steps": "编号步骤，每行一步，带打勾框",
+    "list": "短横列表，每行一条",
+    "checks": "勾选框列表，每行一条",
+    "highlight": "强调色框，放最重要的一句",
+    "cell": "并排小格（相邻的 cell 自动成组）",
+    "options": "选项格，每行一个，格式：选项名——说明",
+    "layers": "分层带，每行一层，格式：层名：内容、内容",
+    "write": "手写线，用、分隔多个空",
+    "tracker": "打卡格，填天数（如 30）",
+    "days": "周一到周日的每日格",
+    "history": "时间线，每行：日期 一件事",
+    "quote": "底部黑条金句"
+  },
+  "types": [
+    {
+      "id": "principle",
+      "name": "原则卡",
+      "aliases": ["原则", "方法卡", "规则卡"],
+      "when": "一个方法、规则、心法、判断标准，想天天看到",
+      "accent": "#B4410F",
+      "maxChars": 300,
+      "detect": ["要点", "金句", "为什么"],
+      "fields": [
+        {"key": "卡名", "kind": "eyebrow", "hint": "2–6 字"},
+        {"key": "标题", "kind": "title", "hint": "一句话结论，≤16 字，可用 / 分两行"},
+        {"key": "为什么", "kind": "lead", "hint": "一句"},
+        {"key": "要点", "kind": "numbered", "label": "怎么做", "hint": "3–5 条，动作——一句说明"},
+        {"key": "手写区", "kind": "write", "hint": "1–2 个空，用、分隔；可省略"},
+        {"key": "金句", "kind": "quote", "hint": "≤20 字"}
+      ],
+      "compact": ["卡名", "标题", "要点", "金句"],
+      "widget": ["标题", "金句"]
+    },
+    {
+      "id": "project",
+      "name": "项目卡",
+      "aliases": ["项目"],
+      "when": "一个进行中的项目，防止隔一阵就忘、接不上",
+      "accent": "#2F6B3A",
+      "maxChars": 320,
+      "detect": ["项目", "下一步", "现在在哪", "卡点"],
+      "fields": [
+        {"key": "项目", "kind": "title", "hint": "项目名"},
+        {"key": "更新", "kind": "date", "hint": "YYYY-MM-DD"},
+        {"key": "目标", "kind": "lead", "label": "目标", "hint": "一句话"},
+        {"key": "下一步", "kind": "highlight", "hint": "只写 1 个，15 分钟内能开始"},
+        {"key": "现在在哪", "kind": "cell", "hint": "阶段 + 最新进展，≤2 行"},
+        {"key": "卡点", "kind": "cell", "hint": "没有就写 无"},
+        {"key": "已定的事", "kind": "list", "hint": "最多 3 条，日期 + 一件事"},
+        {"key": "待我拍板", "kind": "checks", "hint": "最多 2 条"},
+        {"key": "历史", "kind": "history", "hint": "最多 5 条，日期 + 当时的进展；更新时把旧的现在在哪移到这里"}
+      ],
+      "compact": ["项目", "更新", "下一步", "卡点", "待我拍板"],
+      "widget": ["项目", "下一步"]
+    },
+    {
+      "id": "decision",
+      "name": "决策卡",
+      "aliases": ["决策", "选择卡"],
+      "when": "在几个选项之间做选择，或已经做了选择需要记下理由",
+      "accent": "#1D4E89",
+      "maxChars": 320,
+      "detect": ["问题", "选项", "我的选择", "撤回条件"],
+      "fields": [
+        {"key": "问题", "kind": "title", "hint": "要决定的事，一句话"},
+        {"key": "日期", "kind": "date", "hint": "YYYY-MM-DD"},
+        {"key": "底线", "kind": "lead", "label": "底线", "hint": "最坏情况下必须保住什么"},
+        {"key": "选项", "kind": "options", "hint": "2–4 个，选项名——代价或收益"},
+        {"key": "准则", "kind": "list", "hint": "2–3 条，靠什么判断"},
+        {"key": "我的选择", "kind": "highlight", "hint": "选了哪个 + 一句理由；未定写 [待定]"},
+        {"key": "撤回条件", "kind": "cell", "hint": "出现什么情况就改主意"},
+        {"key": "复盘日", "kind": "cell", "hint": "哪天回头看"}
+      ],
+      "compact": ["问题", "我的选择", "撤回条件", "复盘日"],
+      "widget": ["问题", "我的选择"]
+    },
+    {
+      "id": "review",
+      "name": "复盘卡",
+      "aliases": ["复盘", "总结卡"],
+      "when": "一件事做完了（成或败），提炼下次怎么做",
+      "accent": "#7A4B9A",
+      "maxChars": 300,
+      "detect": ["事件", "结果", "下次"],
+      "fields": [
+        {"key": "事件", "kind": "title", "hint": "复盘的是什么，一句话"},
+        {"key": "日期", "kind": "date", "hint": "YYYY-MM-DD"},
+        {"key": "目标", "kind": "cell", "hint": "原本想要什么"},
+        {"key": "结果", "kind": "cell", "hint": "实际发生了什么，用事实"},
+        {"key": "做对了", "kind": "list", "hint": "1–3 条"},
+        {"key": "做错了", "kind": "list", "hint": "1–3 条"},
+        {"key": "下次", "kind": "numbered", "hint": "1–3 条，下次具体怎么做"},
+        {"key": "一句话", "kind": "quote", "hint": "这次学到的，≤20 字"}
+      ],
+      "compact": ["事件", "下次", "一句话"],
+      "widget": ["事件", "一句话"]
+    },
+    {
+      "id": "sop",
+      "name": "流程卡",
+      "aliases": ["流程", "SOP", "操作卡", "手册"],
+      "when": "照着步骤做的事，尤其是交给别人（如家人、同事）执行",
+      "accent": "#0F6E6E",
+      "maxChars": 360,
+      "detect": ["步骤", "什么时候用", "注意"],
+      "fields": [
+        {"key": "流程", "kind": "title", "hint": "做什么，一句话"},
+        {"key": "什么时候用", "kind": "lead", "label": "什么时候用", "hint": "触发条件"},
+        {"key": "准备", "kind": "list", "hint": "需要的东西；可省略"},
+        {"key": "步骤", "kind": "steps", "hint": "3–8 步，每步一个动作，写清多少、多久"},
+        {"key": "注意", "kind": "checks", "hint": "1–3 条容易出错的地方"},
+        {"key": "出问题找", "kind": "highlight", "hint": "找谁、怎么联系"}
+      ],
+      "compact": ["流程", "步骤", "出问题找"],
+      "widget": ["流程", "出问题找"]
+    },
+    {
+      "id": "knowledge",
+      "name": "知识卡",
+      "aliases": ["知识", "概念卡", "学习卡"],
+      "when": "学到的一个概念、框架、课程要点，要落到自己身上",
+      "accent": "#8A6A12",
+      "maxChars": 320,
+      "detect": ["概念", "一句话解释", "用到我这"],
+      "fields": [
+        {"key": "概念", "kind": "title", "hint": "概念名或一句话结论"},
+        {"key": "来源", "kind": "date", "hint": "书 / 课 / 人，可省略"},
+        {"key": "一句话解释", "kind": "lead", "hint": "用大白话"},
+        {"key": "框架", "kind": "numbered", "label": "核心框架", "hint": "3–5 条，名称——一句说明"},
+        {"key": "用到我这", "kind": "checks", "hint": "1–3 条，落到自己项目的具体动作"},
+        {"key": "记住", "kind": "quote", "hint": "≤20 字"}
+      ],
+      "compact": ["概念", "一句话解释", "用到我这"],
+      "widget": ["概念", "记住"]
+    },
+    {
+      "id": "map",
+      "name": "架构卡",
+      "aliases": ["架构", "地图卡", "结构卡", "系统卡"],
+      "when": "一个系统、流程链或组织的结构，看清各部分怎么连起来",
+      "accent": "#2F6B3A",
+      "maxChars": 380,
+      "detect": ["层", "流向"],
+      "fields": [
+        {"key": "名称", "kind": "eyebrow", "hint": "系统名"},
+        {"key": "标题", "kind": "title", "hint": "一句话说明这套结构的核心"},
+        {"key": "层", "kind": "layers", "hint": "3–7 层，自上而下，层名：内容、内容"},
+        {"key": "流向", "kind": "highlight", "hint": "数据或事情怎么流动，用 → 连接"},
+        {"key": "原则", "kind": "list", "hint": "1–3 条设计原则；可省略"}
+      ],
+      "compact": ["名称", "标题", "流向"],
+      "widget": ["标题", "流向"]
+    },
+    {
+      "id": "habit",
+      "name": "习惯卡",
+      "aliases": ["习惯", "打卡卡"],
+      "when": "要养成或戒掉的一个习惯，需要每天打卡",
+      "accent": "#B4410F",
+      "maxChars": 260,
+      "detect": ["习惯", "最低版本", "天数"],
+      "fields": [
+        {"key": "习惯", "kind": "title", "hint": "要养成或戒掉什么，一句话"},
+        {"key": "为什么", "kind": "lead", "hint": "一句"},
+        {"key": "规则", "kind": "numbered", "hint": "2–4 条，靠环境不靠意志力"},
+        {"key": "最低版本", "kind": "highlight", "hint": "状态最差时也能做到的最小一步"},
+        {"key": "天数", "kind": "tracker", "hint": "7 / 14 / 21 / 30"}
+      ],
+      "compact": ["习惯", "规则", "最低版本"],
+      "widget": ["习惯", "最低版本"]
+    },
+    {
+      "id": "week",
+      "name": "周计划卡",
+      "aliases": ["周计划", "本周", "周卡"],
+      "when": "规划一周：最多三件要事，每天写下推进了什么",
+      "accent": "#1D4E89",
+      "maxChars": 240,
+      "detect": ["本周三件事", "不做"],
+      "fields": [
+        {"key": "周", "kind": "eyebrow", "hint": "如 10.13–10.19"},
+        {"key": "本周主题", "kind": "title", "hint": "这周最重要的一句话"},
+        {"key": "本周三件事", "kind": "numbered", "hint": "最多 3 件，做完是什么样子"},
+        {"key": "不做", "kind": "list", "hint": "1–3 件这周明确不碰的事"},
+        {"key": "每日", "kind": "days", "hint": "留空即可"},
+        {"key": "周日检查", "kind": "write", "hint": "如：完成了几件、下周第一件事"}
+      ],
+      "compact": ["周", "本周主题", "本周三件事"],
+      "widget": ["本周主题", "本周三件事"]
+    },
+    {
+      "id": "checklist",
+      "name": "清单卡",
+      "aliases": ["清单", "检查表"],
+      "when": "每次做某件事前都要过一遍的检查项（出门、发布、上线、拍摄）",
+      "accent": "#0F6E6E",
+      "maxChars": 280,
+      "detect": ["清单", "何时用"],
+      "fields": [
+        {"key": "清单", "kind": "title", "hint": "什么时候的清单，如：拍摄出发前"},
+        {"key": "何时用", "kind": "lead", "label": "何时用", "hint": "触发时机"},
+        {"key": "检查项", "kind": "checks", "hint": "5–12 项，每项可核对"},
+        {"key": "最容易漏", "kind": "highlight", "hint": "过去最常漏的一项"}
+      ],
+      "compact": ["清单", "最容易漏", "检查项"],
+      "widget": ["清单", "最容易漏"]
+    },
+    {
+      "id": "person",
+      "name": "人物卡",
+      "aliases": ["人物", "客户卡", "沟通卡"],
+      "when": "一个客户、合作方或家人，记住对方要什么、约定过什么",
+      "accent": "#7A4B9A",
+      "maxChars": 300,
+      "detect": ["对象", "对方要什么", "已约定"],
+      "fields": [
+        {"key": "对象", "kind": "title", "hint": "名字 + 身份"},
+        {"key": "更新", "kind": "date", "hint": "YYYY-MM-DD"},
+        {"key": "对方要什么", "kind": "cell", "hint": "对方真正在意的"},
+        {"key": "我能给", "kind": "cell", "hint": "我能提供的"},
+        {"key": "已约定", "kind": "list", "hint": "1–3 条，日期 + 约定"},
+        {"key": "别踩", "kind": "checks", "hint": "1–2 条雷区"},
+        {"key": "下次联系", "kind": "highlight", "hint": "什么时候、聊什么"}
+      ],
+      "compact": ["对象", "下次联系", "已约定"],
+      "widget": ["对象", "下次联系"]
+    }
+  ]
+}

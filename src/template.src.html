@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="One Page Card turns an agent's concise notes into printable one-page cards: principles, projects, decisions, reviews, SOPs, knowledge, system maps, habits, weekly plans, checklists and people. A4, A5, phone wallpaper and widget sizes.">
+<title>一页卡 · One Page Card</title>
+<style id="pagesize">@page{size:A4;margin:0}</style>
+<style>
+:root{
+  --ink:#161616; --body:#333333; --muted:#595959; --line:#161616; --hair:#BDBDBD;
+  --paper:#ffffff; --bg:#ECEAE6; --warn:#B3261E;
+  --serif:"Songti SC","STSong","Noto Serif CJK SC","Source Han Serif SC","Noto Serif SC",serif;
+  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC","Noto Sans SC",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}
+button,select,textarea{font:inherit}
+
+/* 工具栏 */
+.bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 16px;background:var(--ink);color:#fff;font-size:14px}
+.bar .brand{font-weight:700;margin-right:auto}
+.bar label{display:flex;align-items:center;gap:6px;color:#D9D9D9;font-size:13px}
+.bar select{background:#fff;color:var(--ink);border:0;padding:8px 10px;min-height:40px}
+.bar button{font-weight:700;background:#fff;color:var(--ink);border:0;padding:8px 14px;min-height:40px;cursor:pointer}
+.bar button.ghost{background:transparent;color:#fff;border:1px solid #8A8A8A}
+
+.stack{display:flex;flex-direction:column;align-items:center;gap:28px;padding:24px 16px 56px}
+.slot{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.status{font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.status .bad{color:var(--warn);font-weight:700}
+
+/* 编辑器 */
+.editor{margin:24px auto 0;width:calc(100% - 32px);max-width:794px;background:var(--paper);padding:20px;display:flex;flex-direction:column;gap:10px}
+.editor[hidden]{display:none}
+.editor textarea{width:100%;min-height:300px;font-size:15px;line-height:1.6;padding:12px;border:1px solid var(--ink)}
+.editor .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.editor label{font-weight:700}
+.editor select,.editor button{border:1px solid var(--ink);background:#fff;padding:8px 12px;min-height:44px}
+.editor select{flex:1 1 220px;min-width:0;max-width:100%}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.editor button.primary{background:var(--ink);color:#fff;font-weight:700;cursor:pointer}
+.editor p{margin:0;font-size:13px;color:var(--muted);line-height:1.6}
+
+/* ===== 卡片基础 ===== */
+.card{--a:#B4410F;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;position:relative;overflow:hidden}
+.top{display:flex;justify-content:space-between;gap:12px;font-size:13px;letter-spacing:3px;color:var(--muted);font-weight:500}
+.rule{height:3px;width:64px;background:var(--a);margin-top:14px;flex-shrink:0}
+.card h1{margin:24px 0 0;font-family:var(--serif);font-weight:900;font-size:44px;line-height:1.28;text-wrap:balance}
+.card h1 .hl{color:var(--a)}
+.lead{margin:14px 0 0;font-size:16px;line-height:1.7;color:var(--body)}
+.lead b{color:var(--ink)}
+.label{margin-top:22px;font-size:13px;font-weight:700;letter-spacing:2px;color:var(--muted)}
+.spacer{flex:1 1 auto;min-height:14px}
+.spacer.notes{margin-top:22px;position:relative;background:repeating-linear-gradient(to bottom,transparent 0,transparent 33px,#C8C8C8 33px,#C8C8C8 34px);background-position:0 26px;background-repeat:repeat-y;border-top:1px solid var(--line);margin-bottom:6px}
+.spacer.notes::before{content:"备注";display:block;padding-top:8px;font-size:13px;font-weight:700;letter-spacing:2px;color:var(--muted)}
+@media print{.spacer.notes{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+.numbered{margin-top:8px;display:flex;flex-direction:column;gap:12px}
+.pt{display:flex;gap:16px;border-top:1px solid var(--line);padding-top:10px}
+.num{font-family:var(--serif);font-weight:900;font-size:26px;line-height:1;color:var(--a);width:30px;flex-shrink:0}
+.pt b{display:block;font-size:18px;line-height:1.45}
+.pt span{display:block;font-size:14px;line-height:1.6;color:var(--body);margin-top:2px}
+
+.steps{margin-top:8px;display:flex;flex-direction:column}
+.step{display:flex;align-items:flex-start;gap:14px;border-top:1px solid var(--line);padding:10px 0}
+.step:last-child{border-bottom:1px solid var(--line)}
+.step .sn{width:30px;height:30px;flex-shrink:0;border-radius:50%;background:var(--a);color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.step .st{flex:1;font-size:17px;line-height:1.55;padding-top:3px}
+.step .sb{width:18px;height:18px;border:2px solid var(--ink);flex-shrink:0;margin-top:6px}
+
+.list,.checks,.history{margin-top:8px;display:flex;flex-direction:column}
+.li{display:flex;gap:10px;font-size:15px;line-height:1.55;border-top:1px solid var(--hair);padding:7px 0}
+.li:first-child{border-top-color:var(--line)}
+.li .dash{color:var(--a);font-weight:700;flex-shrink:0}
+.li .box{width:16px;height:16px;border:2px solid var(--ink);flex-shrink:0;margin-top:3px}
+.history .li .d{font-weight:700;flex-shrink:0;min-width:92px;font-variant-numeric:tabular-nums}
+
+.hl-box{margin-top:18px;border:2px solid var(--a);padding:14px 18px}
+.hl-box .k{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--a)}
+.hl-box .v{margin-top:6px;font-size:20px;font-weight:700;line-height:1.45;white-space:pre-line}
+
+.cells{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);margin-top:18px}
+.cells .c{padding:12px 14px}
+.cells .c+.c{border-left:1px solid var(--line)}
+.cells.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cells.n1{grid-template-columns:1fr}
+.c .k{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--muted)}
+.c .v{margin-top:5px;font-size:15px;line-height:1.6;white-space:pre-line}
+
+.options{margin-top:8px;display:grid;gap:8px}
+.opt{border:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.opt b{font-size:16px;line-height:1.4}
+.opt span{font-size:13px;line-height:1.55;color:var(--body)}
+.opt.picked{border:2px solid var(--a)}
+.opt .tag{align-self:flex-start;font-size:12px;font-weight:700;color:#fff;background:var(--a);padding:1px 6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+.layers{margin-top:16px;display:flex;flex-direction:column;gap:6px}
+.ly{display:flex;border:1px solid var(--line)}
+.ly .ln{width:104px;flex-shrink:0;padding:9px 10px;font-weight:700;font-size:14px;border-right:1px solid var(--line);color:var(--a);display:flex;align-items:center}
+.ly .lc{flex:1;padding:8px 10px;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.ly .chip{border:1px solid #8A8A8A;padding:2px 7px;font-size:13px;line-height:1.5}
+
+.write{border:2px solid var(--ink);padding:14px 18px;display:flex;flex-direction:column;gap:14px;margin-top:16px}
+.wl{display:flex;align-items:flex-end;gap:12px;font-size:14px;font-weight:700}
+.wl i{flex:1;border-bottom:1px solid var(--ink);height:20px}
+
+.tracker{margin-top:8px;display:grid;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.tracker div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);height:44px;padding:4px 6px;font-size:11px;color:var(--muted)}
+
+.days{margin-top:8px;display:flex;flex-direction:column}
+.day{display:flex;align-items:flex-end;gap:12px;border-top:1px solid var(--hair);padding:8px 0 6px}
+.day:first-child{border-top-color:var(--line)}
+.day b{width:44px;font-size:14px;flex-shrink:0}
+.day i{flex:1;border-bottom:1px dotted #8A8A8A;height:18px}
+.day .box{width:16px;height:16px;border:2px solid var(--ink);flex-shrink:0}
+
+.quote{margin-top:14px;background:var(--ink);color:#fff;padding:16px 20px;font-family:var(--serif);font-weight:700;font-size:20px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+/* ===== 尺寸 ===== */
+/* A4 / A5：版面按 A4 设计（794×1123），A5 打印时整体缩放 */
+.m-a4 .card,.m-a5 .card{width:794px;height:1122px;padding:56px 64px 48px}
+.m-a5 .card{zoom:.7046}
+/* 手机壁纸：上方留给时钟 */
+.m-phone .card{width:390px;height:844px;padding:180px 26px 30px}
+.m-phone .card h1{font-size:32px;margin-top:18px}
+.m-phone .top{font-size:12px;letter-spacing:2px}
+.m-phone .pt b{font-size:16px}.m-phone .pt span{font-size:13px}
+.m-phone .hl-box .v{font-size:18px}
+.m-phone .quote{font-size:17px;padding:14px 16px}
+.m-phone .step .st{font-size:15px}
+.m-phone .cells{grid-template-columns:1fr}
+.m-phone .cells .c+.c{border-left:0;border-top:1px solid var(--line)}
+/* 桌面小组件 */
+.m-widget .card{width:360px;height:360px;padding:26px 24px}
+.m-widget .card h1{font-size:26px;margin-top:14px}
+.m-widget .top{font-size:11px;letter-spacing:2px}
+.m-widget .rule{margin-top:10px;width:40px}
+.m-widget .hl-box{margin-top:12px;padding:10px 12px}
+.m-widget .hl-box .v{font-size:16px}
+.m-widget .quote{font-size:15px;padding:10px 12px}
+.m-widget .pt{padding-top:6px}.m-widget .pt b{font-size:14px}.m-widget .pt span{display:none}
+.m-widget .num{font-size:18px;width:20px}
+.m-widget .numbered{gap:6px}
+.m-widget .li{font-size:13px;padding:4px 0}
+
+/* 屏幕较窄时 A4/A5 改为流式阅读，不做溢出检查 */
+@media screen and (max-width:840px){
+  .m-a4 .card,.m-a5 .card{width:100%;max-width:794px;height:auto;min-height:0;padding:28px 20px 24px;zoom:1}
+  .m-a4 .card h1,.m-a5 .card h1{font-size:30px}
+  .m-a4 .pt b,.m-a5 .pt b{font-size:16px}
+  .m-a4 .cells,.m-a5 .cells{grid-template-columns:1fr}
+  .m-a4 .cells .c+.c,.m-a5 .cells .c+.c{border-left:0;border-top:1px solid var(--line)}
+  .m-a4 .ly,.m-a5 .ly{flex-direction:column}
+  .m-a4 .ly .ln,.m-a5 .ly .ln{width:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .m-a4 .options,.m-a5 .options{grid-template-columns:1fr!important}
+}
+@media screen and (max-width:420px){
+  .m-phone .card,.m-widget .card{zoom:calc(100vw / 420px)}
+}
+
+@media print{
+  html,body{background:#fff}
+  .bar,.editor,.status{display:none!important}
+  .stack{display:block;padding:0}
+  .slot{display:block}
+  .card{break-after:page;page-break-after:always;box-shadow:none}
+  .slot:last-child .card{break-after:auto;page-break-after:auto}
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="brand">一页卡</div>
+  <label>尺寸
+    <select id="size" aria-label="尺寸">
+      <option value="a4">A4 打印</option>
+      <option value="a5">A5 打印</option>
+      <option value="phone">手机壁纸</option>
+      <option value="widget">桌面小组件</option>
+    </select>
+  </label>
+  <button type="button" class="ghost" id="editBtn">编辑</button>
+  <button type="button" id="printBtn">打印</button>
+</div>
+
+<section class="editor" id="editor" hidden>
+  <label for="paste">卡片文本（多张卡用单独一行 ---- 分隔）</label>
+  <textarea id="paste" spellcheck="false"></textarea>
+  <div class="row">
+    <label for="example" class="sr">示例</label>
+    <select id="example" aria-label="载入示例"><option value="">载入示例…</option></select>
+    <button type="button" class="primary" id="renderBtn">生成卡片</button>
+  </div>
+  <p>不写“类型：”也可以，会按字段自动识别。打印时选对应纸张、边距“无”，勾选“背景图形”。</p>
+</section>
+
+<textarea id="src" hidden>{{CARD_TEXT}}</textarea>
+<script type="application/json" id="types-data">{{TYPES_JSON}}</script>
+<script type="application/json" id="examples-data">{{EXAMPLES_JSON}}</script>
+<script type="application/json" id="default-size">"{{SIZE}}"</script>
+<main class="stack" id="stack"></main>
+
+<script>
+(function(){
+  var TYPES = JSON.parse(document.getElementById('types-data').textContent).types;
+  var EXAMPLES = JSON.parse(document.getElementById('examples-data').textContent);
+  var BYID = {}; TYPES.forEach(function(t){ BYID[t.id] = t; });
+  var PH = '{' + '{';
+  var LIST_KINDS = {numbered:1,steps:1,list:1,checks:1,options:1,layers:1,history:1};
+  var PAGE = {a4:'A4', a5:'A5', phone:'390px 844px', widget:'360px 360px'};
+  var current = '', size = 'a4';
+
+  // 所有字段名（含“类型”），用于解析
+  var KEYS = {'类型':1};
+  TYPES.forEach(function(t){ t.fields.forEach(function(f){ KEYS[f.key] = 1; }); });
+  var keyRe = new RegExp('^\\s*(' + Object.keys(KEYS).sort(function(a,b){return b.length-a.length;}).join('|') + ')\\s*[：:]\\s*(.*)$');
+
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function clean(s){ return s.replace(/^\s*(\d+\s*[.、)）]|[-•·*])\s*/, '').trim(); }
+  function splitPair(s){ var m = s.split(/\s*(?:——|—|--)\s*/); if (m.length > 1) return [m[0], m.slice(1).join('，')]; m = s.match(/^(.{1,14}?)[：:]\s*(.+)$/); return m ? [m[1], m[2]] : [s, '']; }
+
+  function parse(block){
+    var d = {_order:[]}, cur = null;
+    block.split(/\r?\n/).forEach(function(raw){
+      var line = raw.replace(/\s+$/, '');
+      if (!line.trim() || /^```/.test(line.trim())) return;
+      var m = line.match(keyRe);
+      if (m){ cur = m[1]; d[cur] = {text: m[2].trim(), lines: m[2].trim() ? [clean(m[2])] : []}; d._order.push(cur); }
+      else if (cur){ d[cur].lines.push(clean(line)); d[cur].text += (d[cur].text ? '\n' : '') + line.trim(); }
+    });
+    return d;
+  }
+
+  function detect(d){
+    if (d['类型'] && d['类型'].text){
+      var v = d['类型'].text.replace(/\s/g,'');
+      for (var i = 0; i < TYPES.length; i++){
+        var t = TYPES[i];
+        if (v === t.id || v === t.name || t.aliases.indexOf(v) > -1 || v.indexOf(t.name) > -1) return t;
+      }
+    }
+    var best = null, bestScore = 0;
+    TYPES.forEach(function(t){
+      var s = 0; t.detect.forEach(function(k){ if (d[k]) s += 2; });
+      t.fields.forEach(function(f){ if (d[f.key]) s += 1; });
+      if (s > bestScore){ best = t; bestScore = s; }
+    });
+    return best || TYPES[0];
+  }
+
+  function charCount(d){ var n = 0; d._order.forEach(function(k){ if (k !== '类型') n += d[k].text.replace(/\s/g,'').length; }); return n; }
+
+  // ---------- 各种字段的画法 ----------
+  function title(text){
+    var h = el('h1'); var parts = (text||'').split(/\s*[\/／]\s*/);
+    h.appendChild(document.createTextNode(parts[0] || ''));
+    if (parts.length > 1){ h.appendChild(el('br')); h.appendChild(el('span','hl',parts.slice(1).join(''))); }
+    return h;
+  }
+  function label(f){ return el('div','label', f.label || f.key); }
+  function cap(lines, mode){ return mode === 'widget' ? lines.slice(0,3) : mode === 'phone' ? lines.slice(0,5) : lines; }
+
+  var DRAW = {
+    title: function(f, v){ return title(v.text); },
+    lead: function(f, v){ var p = el('p','lead'); if (f.label){ p.appendChild(el('b',null,f.label + '：')); } p.appendChild(document.createTextNode(v.text)); return p; },
+    numbered: function(f, v, ctx){
+      var frag = document.createDocumentFragment(); if (ctx.mode !== 'widget') frag.appendChild(label(f));
+      var box = el('div','numbered');
+      cap(v.lines, ctx.mode).forEach(function(s, i){ var pr = splitPair(s); var row = el('div','pt'); row.appendChild(el('div','num',String(i+1))); var b = el('div'); b.appendChild(el('b',null,pr[0])); if (pr[1]) b.appendChild(el('span',null,pr[1])); row.appendChild(b); box.appendChild(row); });
+      frag.appendChild(box); return frag;
+    },
+    steps: function(f, v, ctx){
+      var frag = document.createDocumentFragment(); frag.appendChild(label(f));
+      var box = el('div','steps');
+      cap(v.lines, ctx.mode).forEach(function(s, i){ var r = el('div','step'); r.appendChild(el('span','sn',String(i+1))); r.appendChild(el('span','st',s)); r.appendChild(el('span','sb')); box.appendChild(r); });
+      frag.appendChild(box); return frag;
+    },
+    list: function(f, v, ctx){ return listOf(f, v, ctx, 'dash'); },
+    checks: function(f, v, ctx){ return listOf(f, v, ctx, 'box'); },
+    history: function(f, v, ctx){
+      var frag = document.createDocumentFragment(); frag.appendChild(label(f));
+      var box = el('div','history');
+      cap(v.lines, ctx.mode).slice(-5).forEach(function(s){ var m = s.match(/^(\d{4}[-./]\d{1,2}[-./]\d{1,2}|\d{1,2}[-./]\d{1,2})\s*(.*)$/); var r = el('div','li'); r.appendChild(el('span','d', m ? m[1] : '·')); r.appendChild(el('span',null, m ? m[2] : s)); box.appendChild(r); });
+      frag.appendChild(box); return frag;
+    },
+    highlight: function(f, v){ var b = el('div','hl-box'); b.appendChild(el('div','k',f.label || f.key)); b.appendChild(el('div','v',v.text)); return b; },
+    options: function(f, v, ctx){
+      var frag = document.createDocumentFragment(); frag.appendChild(label(f));
+      var box = el('div','options'); var n = v.lines.length; box.style.gridTemplateColumns = 'repeat(' + (ctx.mode === 'phone' ? 1 : (n === 3 ? 3 : 2)) + ',minmax(0,1fr))';
+      var chosen = (ctx.d['我的选择'] && ctx.d['我的选择'].text) || '';
+      v.lines.forEach(function(s){ var pr = splitPair(s); var o = el('div','opt'); var hit = pr[0] && chosen.indexOf(pr[0].slice(0, Math.min(6, pr[0].length))) > -1; if (hit){ o.classList.add('picked'); o.appendChild(el('span','tag','已选')); } o.appendChild(el('b',null,pr[0])); if (pr[1]) o.appendChild(el('span',null,pr[1])); box.appendChild(o); });
+      frag.appendChild(box); return frag;
+    },
+    layers: function(f, v){
+      var box = el('div','layers');
+      v.lines.forEach(function(s){ var m = s.match(/^(.{1,10}?)[：:]\s*(.*)$/); var r = el('div','ly'); r.appendChild(el('div','ln', m ? m[1] : s)); var c = el('div','lc'); (m ? m[2] : '').split(/[、,，;；]/).map(function(x){return x.trim();}).filter(Boolean).forEach(function(x){ c.appendChild(el('span','chip',x)); }); r.appendChild(c); box.appendChild(r); });
+      return box;
+    },
+    write: function(f, v){ var w = el('div','write'); var labels = (v.text || '').split(/[、,，;；\n]/).map(function(s){return s.trim();}).filter(Boolean); if (!labels.length) labels = ['']; labels.forEach(function(t){ var r = el('div','wl'); r.appendChild(el('span',null,t)); r.appendChild(el('i')); w.appendChild(r); }); return w; },
+    tracker: function(f, v){
+      var n = parseInt(v.text, 10); if (!(n > 0)) n = 30; n = Math.min(n, 60);
+      var cols = n % 7 === 0 ? 7 : (n <= 10 ? n : (n % 6 === 0 ? 6 : (n % 5 === 0 ? 10 : 7)));
+      var frag = document.createDocumentFragment(); frag.appendChild(el('div','label', n + ' 天打卡'));
+      var g = el('div','tracker'); g.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,1fr))';
+      for (var i = 1; i <= n; i++) g.appendChild(el('div',null,'D' + i));
+      frag.appendChild(g); return frag;
+    },
+    days: function(f){
+      var frag = document.createDocumentFragment(); frag.appendChild(label(f));
+      var box = el('div','days');
+      ['周一','周二','周三','周四','周五','周六','周日'].forEach(function(dn){ var r = el('div','day'); r.appendChild(el('b',null,dn)); r.appendChild(el('i')); r.appendChild(el('span','box')); box.appendChild(r); });
+      frag.appendChild(box); return frag;
+    },
+    quote: function(f, v){ return el('div','quote', v.text); }
+  };
+  function listOf(f, v, ctx, mark){
+    var frag = document.createDocumentFragment(); if (ctx.mode !== 'widget') frag.appendChild(label(f));
+    var box = el('div', mark === 'box' ? 'checks' : 'list');
+    cap(v.lines, ctx.mode).forEach(function(s){ var r = el('div','li'); r.appendChild(mark === 'box' ? el('span','box') : el('span','dash','—')); r.appendChild(el('span',null,s)); box.appendChild(r); });
+    frag.appendChild(box); return frag;
+  }
+
+  function buildCard(d, t, mode){
+    var card = el('article','card t-' + t.id); card.style.setProperty('--a', t.accent);
+    var fields = t.fields;
+    if (mode === 'phone' || mode === 'widget'){
+      var keep = t[mode === 'phone' ? 'compact' : 'widget'];
+      fields = fields.filter(function(f){ return keep.indexOf(f.key) > -1 || f.kind === 'eyebrow' || f.kind === 'date'; });
+    }
+    var eyebrow = '', date = '';
+    t.fields.forEach(function(f){ if (f.kind === 'eyebrow' && d[f.key]) eyebrow = d[f.key].text; if (f.kind === 'date' && d[f.key]) date = d[f.key].text; });
+    var top = el('div','top'); top.appendChild(el('div',null, eyebrow ? (eyebrow + ' · ' + t.name) : t.name)); top.appendChild(el('div',null,date)); card.appendChild(top); card.appendChild(el('div','rule'));
+    var ctx = {d:d, mode:mode}, cells = null, bottom = [];
+    fields.forEach(function(f){
+      if (f.kind === 'eyebrow' || f.kind === 'date') return;
+      var v = d[f.key]; if (!v || (!v.text && !v.lines.length && f.kind !== 'days' && f.kind !== 'tracker')) { if (f.kind !== 'days') return; v = v || {text:'',lines:[]}; }
+      if (f.kind === 'cell'){
+        if (!cells){ cells = el('div','cells'); card.appendChild(cells); }
+        var c = el('div','c'); c.appendChild(el('div','k',f.label || f.key)); c.appendChild(el('div','v',v.text)); cells.appendChild(c);
+        cells.className = 'cells n' + Math.min(cells.children.length, 3); return;
+      }
+      cells = null;
+      if (f.kind === 'write' || f.kind === 'quote'){ bottom.push([f, v]); return; }
+      card.appendChild(DRAW[f.kind](f, v, ctx));
+    });
+    card.appendChild(el('div','spacer'));
+    bottom.forEach(function(p){ card.appendChild(DRAW[p[0].kind](p[0], p[1], ctx)); });
+    return card;
+  }
+
+  function render(text){
+    current = text;
+    var stack = document.getElementById('stack'); stack.textContent = '';
+    stack.className = 'stack m-' + size;
+    document.getElementById('pagesize').textContent = '@page{size:' + PAGE[size] + ';margin:0}';
+    var blocks = text.split(/^\s*-{4,}\s*$/m).map(function(s){return s.trim();}).filter(Boolean);
+    blocks.forEach(function(b){
+      var d = parse(b), t = detect(d);
+      var slot = el('div','slot');
+      var st = el('div','status'); st.appendChild(el('span',null,t.name));
+      var n = charCount(d); var cnt = el('span', n > t.maxChars ? 'bad' : null, n + ' / ' + t.maxChars + ' 字'); st.appendChild(cnt);
+      slot.appendChild(st);
+      var card = buildCard(d, t, size); slot.appendChild(card); stack.appendChild(slot);
+      requestAnimationFrame(function(){
+        var fixed = (size === 'a4' || size === 'a5') && window.innerWidth > 840;
+        var sp = card.querySelector('.spacer');
+        if (fixed && sp && sp.clientHeight > 170) sp.classList.add('notes');
+        if (!fixed && size !== 'phone' && size !== 'widget') return;
+        if (card.scrollHeight > card.clientHeight + 2){ var w = el('span','bad','超出一页：请删减内容'); st.appendChild(w); card.setAttribute('data-overflow','1'); }
+      });
+    });
+  }
+
+  // ---------- 交互 ----------
+  var editor = document.getElementById('editor'), paste = document.getElementById('paste'), sel = document.getElementById('size'), ex = document.getElementById('example');
+  TYPES.forEach(function(t){ if (EXAMPLES[t.id]){ var o = el('option',null,t.name + ' · ' + t.when); o.value = t.id; ex.appendChild(o); } });
+  ex.onchange = function(){ if (ex.value){ paste.value = EXAMPLES[ex.value]; render(paste.value); ex.value = ''; } };
+  document.getElementById('renderBtn').onclick = function(){ if (paste.value.trim()) render(paste.value); };
+  document.getElementById('editBtn').onclick = function(){ editor.hidden = !editor.hidden; if (!editor.hidden){ paste.value = current; paste.focus(); } };
+  document.getElementById('printBtn').onclick = function(){ window.print(); };
+  sel.onchange = function(){ size = sel.value; try { history.replaceState(null, '', '#size=' + size); } catch(e){} if (current) render(current); };
+
+  var hash = (location.hash.match(/size=(a4|a5|phone|widget)/) || [])[1];
+  var def = JSON.parse(document.getElementById('default-size').textContent);
+  size = hash || (PAGE[def] ? def : 'a4'); sel.value = size;
+  var src = document.getElementById('src').value.trim();
+  if (!src || src.indexOf(PH + 'CARD_TEXT') === 0){ editor.hidden = false; paste.value = EXAMPLES.principle || ''; if (paste.value) render(paste.value); }
+  else render(src);
+})();
+</script>
+</body>
+</html>
