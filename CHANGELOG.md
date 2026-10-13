@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.2.0 · 2026-10-13
+## v0.2.0 · 2026-10-13 
 
 - **11 card types**: principle, project, decision, review, SOP, knowledge, system map, habit, weekly plan, checklist, person.
 - **Configurable types**: `types.json` is the single source of truth; each type is a list of fields using 17 layout kinds. New types need no code.
