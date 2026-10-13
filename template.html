@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="One Page Card turns an agent's concise notes into printable A4 principle cards and project status cards, with a mobile-friendly view.">
+<title>一页卡</title>
+<style>
+:root{
+  --ink:#161616; --body:#333333; --muted:#555555; --line:#161616;
+  --paper:#ffffff; --bg:#ECEAE6;
+  --accent:#B4410F; --accent-project:#2F6B3A;
+  --serif:'Noto Serif SC','Songti SC','STSong',serif;
+  --sans:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}
+.bar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:10px 16px;background:var(--ink);color:#fff;font-size:14px}
+.bar button{font:inherit;font-weight:700;background:#fff;color:var(--ink);border:0;padding:10px 16px;min-height:44px;cursor:pointer}
+.bar .hint{color:#D9D9D9;font-size:12px}
+.stack{display:flex;flex-direction:column;align-items:center;gap:24px;padding:24px 16px 48px}
+
+/* 卡片：屏幕上是流式，打印时固定 A4 */
+.card{--a:var(--accent);width:100%;max-width:794px;background:var(--paper);padding:56px 64px 48px;
+  display:flex;flex-direction:column;min-height:1123px;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.card.project{--a:var(--accent-project)}
+.top{display:flex;justify-content:space-between;gap:12px;font-size:13px;letter-spacing:3px;color:var(--muted);font-weight:500}
+.rule{height:3px;width:64px;background:var(--a);margin-top:14px}
+h1{margin:26px 0 0;font-family:var(--serif);font-weight:900;font-size:46px;line-height:1.28;text-wrap:balance}
+h1 .hl{color:var(--a)}
+.why{margin:16px 0 0;font-size:16px;line-height:1.7;color:var(--body)}
+.label{margin-top:28px;font-size:14px;font-weight:700;letter-spacing:2px;color:var(--muted)}
+.points{margin-top:10px;display:flex;flex-direction:column;gap:14px}
+.pt{display:flex;gap:18px;border-top:1px solid var(--line);padding-top:12px}
+.num{font-family:var(--serif);font-weight:900;font-size:28px;line-height:1;color:var(--a);width:32px;flex-shrink:0}
+.pt b{display:block;font-size:19px;line-height:1.45}
+.pt span{display:block;font-size:15px;line-height:1.6;color:var(--body);margin-top:3px}
+.spacer{flex:1;min-height:24px}
+.write{border:2px solid var(--ink);padding:18px 22px;display:flex;flex-direction:column;gap:16px;margin-top:24px}
+.wl{display:flex;align-items:flex-end;gap:12px;font-size:15px;font-weight:700}
+.wl i{flex:1;border-bottom:1px solid var(--ink);height:22px}
+.quote{margin-top:16px;background:var(--ink);color:#fff;padding:18px 22px;font-family:var(--serif);font-weight:700;font-size:21px;line-height:1.5}
+
+/* 项目卡 */
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);margin-top:24px}
+.cell{padding:14px 16px;border-bottom:1px solid var(--line)}
+.cell:nth-child(odd){border-right:1px solid var(--line)}
+.cell.full{grid-column:1/-1;border-right:0}
+.cell:last-child,.cell.last{border-bottom:0}
+.k{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--muted)}
+.v{margin-top:6px;font-size:16px;line-height:1.6;white-space:pre-line}
+.next{margin-top:20px;border:2px solid var(--a);padding:16px 20px}
+.next .k{color:var(--a)}
+.next .v{font-size:22px;font-weight:700;line-height:1.45}
+.list{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.li{display:flex;gap:10px;font-size:15px;line-height:1.55;border-top:1px solid var(--line);padding-top:8px}
+.box{width:15px;height:15px;border:2px solid var(--ink);flex-shrink:0;margin-top:3px}
+.dash{color:var(--a);font-weight:700;flex-shrink:0}
+
+/* 未渲染时的粘贴模式 */
+.editor{width:100%;max-width:794px;background:var(--paper);padding:24px;display:flex;flex-direction:column;gap:12px}
+.editor textarea{width:100%;min-height:320px;font:15px/1.6 var(--sans);padding:12px;border:1px solid var(--ink)}
+.editor label{font-weight:700}
+.editor button{align-self:flex-start;font:inherit;font-weight:700;background:var(--ink);color:#fff;border:0;padding:12px 18px;min-height:44px;cursor:pointer}
+
+@media (max-width:600px){
+  .card{padding:28px 20px 24px;min-height:0}
+  h1{font-size:32px}
+  .pt b{font-size:17px}
+  .meta{grid-template-columns:1fr}
+  .cell:nth-child(odd){border-right:0}
+}
+@page{size:A4;margin:0}
+@media print{
+  html,body{background:#fff}
+  .bar,.editor{display:none!important}
+  .stack{padding:0;gap:0;display:block}
+  .card{width:210mm;max-width:none;height:297mm;min-height:0;overflow:hidden;padding:15mm 17mm 13mm;
+    box-shadow:none;break-after:page;page-break-after:always}
+  .card:last-child{break-after:auto;page-break-after:auto}
+  .quote{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .next,.rule{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div>一页卡 <span class="hint">· 打印选 A4、边距无，一张卡一页</span></div>
+  <button type="button" id="printBtn">打印</button>
+</div>
+<textarea id="src" hidden>{{CARD_TEXT}}</textarea>
+<main class="stack" id="stack"></main>
+
+<script>
+(function(){
+  var KEYS = ['卡名','标题','为什么','要点','手写区','金句','项目','目标','现在在哪','下一步','卡点','已定的事','待我拍板','更新'];
+  var LISTS = {'要点':1,'已定的事':1,'待我拍板':1};
+  var keyRe = new RegExp('^\\s*(' + KEYS.join('|') + ')\\s*[：:]\\s*(.*)$');
+
+  function el(tag, cls, text){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function clean(s){ return s.replace(/^\s*(\d+[.、)）]|[-•·*])\s*/, '').trim(); }
+
+  function parse(block){
+    var d = {}, cur = null;
+    block.split(/\r?\n/).forEach(function(raw){
+      var line = raw.replace(/\s+$/, '');
+      if (!line.trim() || /^```/.test(line.trim())) return;
+      var m = line.match(keyRe);
+      if (m){
+        cur = m[1];
+        if (LISTS[cur]) { d[cur] = []; if (m[2].trim()) d[cur].push(clean(m[2])); }
+        else d[cur] = m[2].trim();
+      } else if (cur){
+        if (LISTS[cur]) d[cur].push(clean(line));
+        else d[cur] = (d[cur] ? d[cur] + '\n' : '') + line.trim();
+      }
+    });
+    return d;
+  }
+
+  function header(card, left, right){
+    var top = el('div','top'); top.appendChild(el('div',null,left||'')); top.appendChild(el('div',null,right||''));
+    card.appendChild(top); card.appendChild(el('div','rule'));
+  }
+  function title(text){
+    var h = el('h1'); var parts = (text||'').split(/\s*[\/／]\s*/);
+    h.appendChild(document.createTextNode(parts[0] || ''));
+    if (parts.length > 1){ h.appendChild(el('br')); h.appendChild(el('span','hl',parts.slice(1).join(''))); }
+    return h;
+  }
+  function writeBox(labels){
+    var w = el('div','write');
+    labels.forEach(function(t){ var r = el('div','wl'); r.appendChild(el('span',null,t)); r.appendChild(el('i')); w.appendChild(r); });
+    return w;
+  }
+
+  function principle(d){
+    var c = el('article','card');
+    header(c, d['卡名'] || '一页卡', '');
+    c.appendChild(title(d['标题']));
+    if (d['为什么']) c.appendChild(el('p','why',d['为什么']));
+    if (d['要点'] && d['要点'].length){
+      var ps = el('div','points');
+      d['要点'].forEach(function(p, i){
+        var row = el('div','pt'); row.appendChild(el('div','num',String(i+1)));
+        var body = el('div'); var bits = p.split(/\s*(?:——|—|--|：|:)\s*/);
+        body.appendChild(el('b',null,bits[0]));
+        if (bits.length > 1) body.appendChild(el('span',null,bits.slice(1).join('，')));
+        row.appendChild(body); ps.appendChild(row);
+      });
+      c.appendChild(ps);
+    }
+    c.appendChild(el('div','spacer'));
+    if (d['手写区']) c.appendChild(writeBox(d['手写区'].split(/[、,，;；]/).map(function(s){return s.trim();}).filter(Boolean)));
+    if (d['金句']) c.appendChild(el('div','quote',d['金句']));
+    return c;
+  }
+
+  function project(d){
+    var c = el('article','card project');
+    header(c, '项目卡', d['更新'] ? '更新 ' + d['更新'] : '');
+    c.appendChild(title(d['项目']));
+    if (d['目标']) c.appendChild(el('p','why','目标：' + d['目标']));
+    if (d['下一步']){
+      var n = el('div','next'); n.appendChild(el('div','k','下一步')); n.appendChild(el('div','v',d['下一步'])); c.appendChild(n);
+    }
+    var meta = el('div','meta');
+    function cell(k, v, full){ var x = el('div','cell' + (full?' full':'')); x.appendChild(el('div','k',k)); x.appendChild(el('div','v',v||'—')); meta.appendChild(x); return x; }
+    cell('现在在哪', d['现在在哪'], false);
+    var last = cell('卡点', d['卡点'] || '无', false);
+    meta.lastChild.classList.add('last'); meta.children[0].classList.add('last');
+    c.appendChild(meta);
+    function list(k, items, mark){
+      if (!items || !items.length) return;
+      c.appendChild(el('div','label',k));
+      var l = el('div','list');
+      items.forEach(function(t){ var r = el('div','li'); r.appendChild(mark === 'box' ? el('span','box') : el('span','dash','—')); r.appendChild(el('span',null,t)); l.appendChild(r); });
+      c.appendChild(l);
+    }
+    list('已定的事', d['已定的事'], 'dash');
+    list('待我拍板', d['待我拍板'], 'box');
+    c.appendChild(el('div','spacer'));
+    c.appendChild(writeBox(['这次推进了什么','下次从哪接上']));
+    return c;
+  }
+
+  function render(text){
+    var stack = document.getElementById('stack'); stack.textContent = '';
+    text.split(/^\s*-{4,}\s*$/m).map(function(s){return s.trim();}).filter(Boolean).forEach(function(b){
+      var d = parse(b);
+      stack.appendChild(d['项目'] ? project(d) : principle(d));
+    });
+  }
+
+  function editor(){
+    var stack = document.getElementById('stack');
+    var box = el('div','editor');
+    var lab = el('label',null,'把 agent 给的卡片文本粘贴到这里'); lab.setAttribute('for','paste');
+    var ta = el('textarea'); ta.id = 'paste';
+    var btn = el('button',null,'生成卡片'); btn.type = 'button';
+    btn.onclick = function(){ if (ta.value.trim()) { render(ta.value); box.remove(); } };
+    box.appendChild(lab); box.appendChild(ta); box.appendChild(btn);
+    stack.appendChild(box);
+  }
+
+  document.getElementById('printBtn').onclick = function(){ window.print(); };
+  var src = document.getElementById('src').value.trim();
+  if (!src || src === '{' + '{CARD_TEXT}' + '}') editor(); else render(src);
+})();
+</script>
+</body>
+</html>
